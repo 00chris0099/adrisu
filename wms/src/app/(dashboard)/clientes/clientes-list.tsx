@@ -70,7 +70,7 @@ export default function ClientesList() {
       )}
 
       {!loading && customers.length === 0 && (
-        <EmptyState icon={Users} title="No hay clientes" description="Los clientes que se registren en la tienda apareceran aqui" />
+        <EmptyState icon={<Users size={48} />} title="No hay clientes" description="Los clientes que se registren en la tienda apareceran aqui" />
       )}
 
       {!loading && customers.length > 0 && (
