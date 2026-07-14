@@ -195,7 +195,7 @@ export default function PedidosPage() {
                     {/* Quick WhatsApp button */}
                     {getWhatsAppUrl(order) && (
                       <a
-                        href={getWhatsAppUrl(order)}
+                        href={getWhatsAppUrl(order) ?? undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded-lg transition-colors"
@@ -259,7 +259,7 @@ export default function PedidosPage() {
               <div className="flex gap-3">
                 {getWhatsAppUrl(previewOrder) && (
                   <a
-                    href={getWhatsAppUrl(previewOrder)}
+                    href={getWhatsAppUrl(previewOrder) ?? undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
