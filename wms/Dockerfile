@@ -1,7 +1,7 @@
 FROM node:20-slim
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-RUN corepack enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @repo/prisma-wms db:generate
