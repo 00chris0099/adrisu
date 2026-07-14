@@ -65,7 +65,7 @@ export async function createShipment(params: ShalomShipmentParams): Promise<Shal
 
   try {
     const payload = {
-      numero Orden: params.orderNumber,
+      numero_orden: params.orderNumber,
       remitente: {
         nombre: params.originName,
         telefono: params.originPhone,
