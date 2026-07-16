@@ -141,6 +141,7 @@ model User {
   assignedCycleCounts  CycleCount[]       @relation("CycleCountAssignee")
   qualityChecks        QualityCheck[]     @relation("QCAssigner")
   wishlists            Wishlist[]
+  blogPosts            BlogPost[]
 
   @@map("users")
 }
