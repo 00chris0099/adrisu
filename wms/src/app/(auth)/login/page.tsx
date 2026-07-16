@@ -93,10 +93,6 @@ function LoginForm() {
             ) : 'Iniciar Sesion'}
           </button>
         </form>
-
-        <p className="text-center text-xs text-gray-600 mt-6">
-          Demo: admin@adriskids.com / admin123
-        </p>
       </div>
     </div>
   );

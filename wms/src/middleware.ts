@@ -1,24 +1,36 @@
 import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
+const ALLOWED_ORIGINS = [
+  'https://adriskids.com',
+  'https://tiendavirtual-tiendaadrisuk.jpq6em.easypanel.host',
+  'http://localhost:3001',
+];
+
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
-  const publicRoutes = ['/login', '/api/auth', '/api/v1/health', '/api/v1/products', '/api/v1/categories', '/api/v1/landings', '/api/v1/upload', '/api/v1/versions', '/api/v1/inventory', '/api/v1/lots', '/api/v1/serial-numbers', '/api/v1/orders', '/api/v1/shipments', '/api/v1/customers', '/api/v1/warehouses', '/api/v1/analytics', '/api/v1/dashboard', '/api/v1/suggested-products'];
-  const isPublic = publicRoutes.some((r) => pathname.startsWith(r));
+  // Only truly public routes (read-only, no sensitive data)
+  const publicRoutes = ['/login', '/api/auth', '/api/v1/health'];
+  const readOnlyPublicRoutes = ['/api/v1/products', '/api/v1/categories', '/api/v1/landings'];
 
-  if (isPublic) {
+  const isFullyPublic = publicRoutes.some((r) => pathname.startsWith(r));
+  const isReadOnlyPublic = readOnlyPublicRoutes.some((r) => pathname.startsWith(r));
+
+  if (isFullyPublic) {
     if (session && pathname === '/login') {
       return NextResponse.redirect(new URL('/', req.url));
     }
-    const response = NextResponse.next();
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    return response;
+    return NextResponse.next();
   }
 
+  // Read-only routes: allow GET without auth, but require auth for mutations
+  if (isReadOnlyPublic && req.method === 'GET') {
+    return NextResponse.next();
+  }
+
+  // All other routes require authentication
   if (!session) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -28,11 +40,7 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  const response = NextResponse.next();
-  response.headers.set('Access-Control-Allow-Origin', '*');
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  return response;
+  return NextResponse.next();
 });
 
 export const config = {

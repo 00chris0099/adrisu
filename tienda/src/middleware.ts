@@ -1,30 +1,54 @@
 import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
+const ALLOWED_ORIGINS = [
+  'https://adriskids.com',
+  'https://tiendavirtual-tiendaadrisuk.jpq6em.easypanel.host',
+  'http://localhost:3000',
+];
+
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
-  // Rutas completamente publicas (no requieren login)
-  const publicRoutes = [
+  // Public page routes
+  const publicPageRoutes = [
     '/', '/tienda', '/producto', '/carrito', '/checkout', '/pedido', '/pago',
-    '/login', '/registro',
-    '/api/v1/products', '/api/v1/categories', '/api/v1/offers',
-    '/api/v1/orders', '/api/v1/payments', '/api/v1/auth',
-    '/api/v1/landings', '/api/v1/suggested-products', '/api/auth',
-    '/api/v1/abandoned-checkouts', '/api/v1/upload',
+    '/login', '/registro', '/faq', '/blog',
   ];
-  const isPublic = publicRoutes.some((r) => pathname === r || pathname.startsWith(r + '/'));
 
-  if (isPublic) {
-    const response = NextResponse.next();
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    return response;
+  // Public API routes (read-only safe)
+  const publicApiRoutes = [
+    '/api/v1/products', '/api/v1/categories', '/api/v1/offers',
+    '/api/v1/landings', '/api/v1/suggested-products', '/api/auth',
+  ];
+
+  // Mutations that need auth
+  const protectedApiRoutes = [
+    '/api/v1/orders', '/api/v1/payments', '/api/v1/wishlists',
+    '/api/v1/newsletter', '/api/v1/auth/register',
+  ];
+
+  const isPublicPage = publicPageRoutes.some((r) => pathname === r || pathname.startsWith(r + '/'));
+  const isPublicApi = publicApiRoutes.some((r) => pathname.startsWith(r));
+  const isProtectedApi = protectedApiRoutes.some((r) => pathname.startsWith(r));
+
+  // Public pages - always accessible
+  if (isPublicPage) {
+    return NextResponse.next();
   }
 
-  // Rutas protegidas (requieren login)
+  // Public API - allow GET without auth
+  if (isPublicApi && req.method === 'GET') {
+    return NextResponse.next();
+  }
+
+  // Protected API - POST/PUT/DELETE need auth
+  if (isPublicApi && req.method !== 'GET' && !session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Other protected routes
   if (!session) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

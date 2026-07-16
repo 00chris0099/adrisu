@@ -85,5 +85,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: '/login',
   },
   session: { strategy: 'jwt' },
-  secret: process.env.NEXTAUTH_SECRET || 'adriskids-wms-secret-2024',
+  secret: process.env.NEXTAUTH_SECRET,
 });
