@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 
 async function getPost(slug: string) {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/blog/posts/${slug}`, {
+    const wmsUrl = process.env.WMS_INTERNAL_URL || 'https://tiendavirtual-adrisuestesiwms.jpq6em.easypanel.host';
+    const res = await fetch(`${wmsUrl}/api/v1/blog/posts/${slug}`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) return null;

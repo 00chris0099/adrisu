@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import { Loader2, Search, Package } from 'lucide-react';
 
-const categories = [
+const defaultCategories = [
   { name: 'Todos', slug: '' },
 ];
 
@@ -30,7 +30,24 @@ function TiendaContent() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc' | 'name'>('newest');
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>(defaultCategories);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/v1/categories');
+        if (res.ok) {
+          const data = await res.json();
+          const cats = data.data || data || [];
+          if (Array.isArray(cats) && cats.length > 0) {
+            setCategories([{ name: 'Todos', slug: '' }, ...cats.map((c: any) => ({ name: c.name, slug: c.slug }))]);
+          }
+        }
+      } catch { /* use default */ }
+    }
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -145,6 +162,9 @@ function TiendaContent() {
                       );
                     })()}
                   </div>
+                  {product.stock === 0 && (
+                    <span className="text-[10px] text-red-500 font-bold mt-1 block">Agotado</span>
+                  )}
                   {product.stock <= 5 && product.stock > 0 && (
                     <span className="text-[10px] text-orange-500 font-medium mt-1 block">Ultimas unidades</span>
                   )}

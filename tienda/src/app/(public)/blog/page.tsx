@@ -8,7 +8,8 @@ export const metadata: Metadata = {
 
 async function getPosts() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/blog/posts?status=published&limit=20`, {
+    const wmsUrl = process.env.WMS_INTERNAL_URL || 'https://tiendavirtual-adrisuestesiwms.jpq6em.easypanel.host';
+    const res = await fetch(`${wmsUrl}/api/v1/blog/posts?status=published&limit=20`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) return [];
