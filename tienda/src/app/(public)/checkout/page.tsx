@@ -389,26 +389,52 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Section 2: Configurable Offers */}
-            {offers.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 border border-gray-100">
-                <h2 className="font-semibold flex items-center gap-2 mb-3"><ShieldCheck size={18} className="text-green-600" /> Ofertas disponibles</h2>
-                <div className="space-y-2">
-                  {offers.map((offer: any) => (
-                    <label key={offer.id} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedOffers.includes(offer.id) ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                      <input type="checkbox" checked={selectedOffers.includes(offer.id)}
-                        onChange={(e) => setSelectedOffers(e.target.checked ? [...selectedOffers, offer.id] : selectedOffers.filter((id) => id !== offer.id))}
-                        className="w-4 h-4 text-green-600 rounded" />
+            {/* Per-product offer selectors */}
+            {items.map((item) => {
+              const itemOffers = productOffers[item.productId];
+              if (!itemOffers || itemOffers.length === 0) return null;
+              const currentOffer = selectedProductOffers[item.productId] || 'main';
+              return (
+                <div key={`offers-${item.productId}`} className="bg-white rounded-2xl p-5 border border-gray-100">
+                  <h2 className="font-semibold flex items-center gap-2 mb-3"><ShieldCheck size={18} className="text-green-600" /> Ofertas: {item.name}</h2>
+                  <div className="space-y-2">
+                    <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${currentOffer === 'main' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <input type="radio" name={`offer-${item.productId}`} checked={currentOffer === 'main'}
+                        onChange={() => setSelectedProductOffers(prev => ({ ...prev, [item.productId]: 'main' }))} className="w-4 h-4 text-green-600" />
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{offer.name}</p>
-                        <p className="text-xs text-gray-500">{offer.description || `Min ${offer.minQuantity} unidades`}</p>
+                        <p className="text-sm font-medium">Producto individual</p>
+                        <p className="text-xs text-gray-500">1 unidad</p>
                       </div>
-                      <span className="text-sm font-bold text-green-600">-{offer.discountPercent}%</span>
+                      <span className="text-sm font-bold text-green-600">S/ {item.price}</span>
                     </label>
-                  ))}
+                    {itemOffers.map((offer: any) => {
+                      const isSelected = currentOffer === offer.id;
+                      const offerPrice = Number(offer.price) || 0;
+                      let displayPrice = offerPrice;
+                      let unitLabel = '';
+                      if (offer.type === 'quantity') {
+                        unitLabel = `${offer.quantity} unidades`;
+                      } else if (offer.type === 'addon') {
+                        const linked = linkedProducts[offer.linkedProductId || ''];
+                        displayPrice = item.price + offerPrice;
+                        unitLabel = linked ? `+ ${linked.name}` : 'Producto adicional';
+                      }
+                      return (
+                        <label key={offer.id} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                          <input type="radio" name={`offer-${item.productId}`} checked={isSelected}
+                            onChange={() => setSelectedProductOffers(prev => ({ ...prev, [item.productId]: isSelected ? 'main' : offer.id }))} className="w-4 h-4 text-green-600" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{offer.name}</p>
+                            <p className="text-xs text-gray-500">{offer.description || unitLabel}</p>
+                          </div>
+                          <span className="text-sm font-bold text-green-600">S/ {displayPrice.toFixed(2)}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })}
 
             {/* Section 3: Contact & Shipping Form */}
             <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-4">
@@ -559,13 +585,6 @@ export default function CheckoutPage() {
                 <div className="border-t pt-2 flex justify-between font-bold text-lg"><span>Total</span><span className="text-green-600">S/ {finalTotal.toFixed(2)}</span></div>
               </div>
               {subtotal < 150 && <p className="text-xs text-gray-400 text-center">Envio gratis en compras mayores a S/ 150</p>}
-            </div>
-          </div>
-                )}
-                <div className="border-t pt-2 flex justify-between font-bold text-lg"><span>Total</span><span className="text-green-600">S/ {finalTotal.toFixed(2)}</span></div>
-              </div>
-              {subtotal < 150 && <p className="text-xs text-gray-400 text-center">Envio gratis en compras mayores a S/ 150</p>}
-              </div>
 
               {/* Per-product offer selectors */}
               {items.map((item) => {
@@ -576,7 +595,6 @@ export default function CheckoutPage() {
                   <div key={`offers-${item.productId}`} className="mt-3 pt-3 border-t border-gray-100">
                     <p className="text-xs font-medium text-gray-500 mb-2">Ofertas para: {item.name}</p>
                     <div className="space-y-1.5">
-                      {/* Main option */}
                       <button
                         onClick={() => setSelectedProductOffers(prev => ({ ...prev, [item.productId]: 'main' }))}
                         className={`w-full flex items-center gap-2.5 p-2 rounded-lg border-2 transition-all text-left ${currentOffer === 'main' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
@@ -592,7 +610,6 @@ export default function CheckoutPage() {
                           {currentOffer === 'main' && <Check size={10} className="text-white" />}
                         </div>
                       </button>
-                      {/* Offer options */}
                       {itemOffers.map((offer) => {
                         const isSelected = currentOffer === offer.id;
                         const offerPrice = Number(offer.price) || 0;
@@ -635,6 +652,7 @@ export default function CheckoutPage() {
               })}
             </div>
           </div>
+        </div>
       </main>
 
     </div>
