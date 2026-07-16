@@ -12,15 +12,18 @@
     "lint": "echo 'Lint passed'",
     "db:generate": "pnpm --filter @repo/prisma-wms db:generate && pnpm --filter @repo/prisma db:generate",
     "db:seed": "pnpm --filter @repo/prisma-wms db:seed && pnpm --filter @repo/prisma db:seed",
+    "migrate:variant": "pnpm exec tsx scripts/migrate-eliminate-variant.ts",
     "sync:start": "pnpm --filter @repo/sync-worker start"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
+    "tsx": "^4.0.0",
     "typescript": "^5.4.0"
   },
   "packageManager": "pnpm@9.0.0",
   "dependencies": {
     "clsx": "^2.1.1",
+    "pg": "^8.13.0",
     "tailwind-merge": "^3.6.0"
   }
 }
