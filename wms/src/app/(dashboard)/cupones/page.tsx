@@ -120,6 +120,16 @@ export default function CuponesPage() {
               <input type="number" value={form.minPurchase} onChange={(e) => setForm({ ...form, minPurchase: parseFloat(e.target.value) || 0 })}
                 min="0" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
             </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Descuento Maximo (S/)</label>
+              <input type="number" value={form.maxDiscount} onChange={(e) => setForm({ ...form, maxDiscount: e.target.value })}
+                min="0" placeholder="Sin limite" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Limite de Usos</label>
+              <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
+                min="0" placeholder="Sin limite" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
             <div className="col-span-2">
               <label className="block text-xs text-gray-500 mb-1">Descripcion</label>
               <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
