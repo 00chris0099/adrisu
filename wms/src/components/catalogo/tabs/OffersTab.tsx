@@ -12,6 +12,7 @@ interface Offer {
   type: string;
   quantity: number;
   price: number;
+  compareAtPrice: number | null;
   linkedProductId: string | null;
   imageUrl: string | null;
   sortOrder: number;
@@ -36,7 +37,6 @@ export default function OffersTab() {
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [imageUploading, setImageUploading] = useState(false);
 
-  // Fetch offers for this product
   useEffect(() => {
     if (!productId) {
       setLoading(false);
@@ -51,7 +51,6 @@ export default function OffersTab() {
       .finally(() => setLoading(false));
   }, [productId]);
 
-  // Fetch all products for linked product select
   useEffect(() => {
     fetch('/api/v1/products?limit=200&status=active')
       .then(r => r.json())
@@ -69,6 +68,7 @@ export default function OffersTab() {
       type,
       quantity: type === 'quantity' ? 1 : 1,
       price: 0,
+      compareAtPrice: null,
       linkedProductId: null,
       imageUrl: null,
       sortOrder: offers.length,
@@ -177,6 +177,25 @@ export default function OffersTab() {
   const quantityOffers = offers.filter(o => o.type === 'quantity').sort((a, b) => a.sortOrder - b.sortOrder);
   const addonOffers = offers.filter(o => o.type === 'addon').sort((a, b) => a.sortOrder - b.sortOrder);
 
+  const renderOfferPrice = (offer: Offer) => {
+    const hasCompare = offer.compareAtPrice != null && offer.compareAtPrice > offer.price;
+    return (
+      <div className="flex items-center gap-2">
+        {hasCompare && (
+          <span className="text-xs text-gray-500 line-through">S/ {offer.compareAtPrice!.toFixed(2)}</span>
+        )}
+        <span className={`text-xs font-bold ${hasCompare ? 'text-red-400' : 'text-green-400'}`}>
+          S/ {offer.price.toFixed(2)}
+        </span>
+        {hasCompare && (
+          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-red-500/20 text-red-400 rounded">
+            -{Math.round((1 - offer.price / offer.compareAtPrice!) * 100)}%
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Main Product Card (read-only) */}
@@ -255,8 +274,9 @@ export default function OffersTab() {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {offer.quantity} unidades &middot; S/ {offer.price.toFixed(2)} c/u
+                    {offer.quantity} unidades
                   </p>
+                  {renderOfferPrice(offer)}
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
                   <button
@@ -336,10 +356,10 @@ export default function OffersTab() {
                         <span className="px-1.5 py-0.5 text-[10px] bg-red-500/20 text-red-400 rounded">Inactiva</span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      S/ {offer.price.toFixed(2)}
-                      {linked && <span className="text-gray-600"> &rarr; {linked.name}</span>}
-                    </p>
+                    {renderOfferPrice(offer)}
+                    {linked && (
+                      <p className="text-[10px] text-gray-600 mt-0.5">→ {linked.name}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-0.5 shrink-0">
                     <button
@@ -419,19 +439,32 @@ export default function OffersTab() {
                     placeholder="0.00"
                   />
                 </div>
-                {editingOffer.type === 'quantity' && (
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">Cantidad</label>
-                    <input
-                      type="number"
-                      value={editingOffer.quantity || 1}
-                      onChange={(e) => setEditingOffer(prev => prev ? { ...prev, quantity: parseInt(e.target.value) || 1 } : prev)}
-                      min="1"
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Precio anterior (S/)</label>
+                  <input
+                    type="number"
+                    value={editingOffer.compareAtPrice ?? ''}
+                    onChange={(e) => setEditingOffer(prev => prev ? { ...prev, compareAtPrice: e.target.value ? parseFloat(e.target.value) : null } : prev)}
+                    min="0"
+                    step="0.01"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    placeholder="Opcional"
+                  />
+                </div>
               </div>
+
+              {editingOffer.type === 'quantity' && (
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Cantidad</label>
+                  <input
+                    type="number"
+                    value={editingOffer.quantity || 1}
+                    onChange={(e) => setEditingOffer(prev => prev ? { ...prev, quantity: parseInt(e.target.value) || 1 } : prev)}
+                    min="1"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  />
+                </div>
+              )}
 
               {editingOffer.type === 'addon' && (
                 <div>
@@ -478,28 +511,16 @@ export default function OffersTab() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Orden</label>
+              <div className="flex items-center">
+                <label className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white cursor-pointer hover:bg-gray-700 transition-colors">
                   <input
-                    type="number"
-                    value={editingOffer.sortOrder ?? 0}
-                    onChange={(e) => setEditingOffer(prev => prev ? { ...prev, sortOrder: parseInt(e.target.value) || 0 } : prev)}
-                    min="0"
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    type="checkbox"
+                    checked={editingOffer.isActive ?? true}
+                    onChange={(e) => setEditingOffer(prev => prev ? { ...prev, isActive: e.target.checked } : prev)}
+                    className="rounded bg-gray-700 border-gray-600 text-brand-500 focus:ring-brand-500"
                   />
-                </div>
-                <div className="flex items-end">
-                  <label className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white cursor-pointer hover:bg-gray-700 transition-colors w-full">
-                    <input
-                      type="checkbox"
-                      checked={editingOffer.isActive ?? true}
-                      onChange={(e) => setEditingOffer(prev => prev ? { ...prev, isActive: e.target.checked } : prev)}
-                      className="rounded bg-gray-700 border-gray-600 text-brand-500 focus:ring-brand-500"
-                    />
-                    <span className="text-xs text-gray-400">Activa</span>
-                  </label>
-                </div>
+                  <span className="text-xs text-gray-400">Activa</span>
+                </label>
               </div>
             </div>
 
