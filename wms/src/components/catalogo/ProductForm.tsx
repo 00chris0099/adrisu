@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Save, Loader2, Eye, EyeOff, Info, Tag, Layout, History, Copy, FileText, CheckCircle, AlertCircle, Package } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Eye, EyeOff, Info, Tag, Layout, History, Copy, FileText, CheckCircle, AlertCircle, Package, Gift } from 'lucide-react';
 import { ProductFormProvider, useProductForm } from './ProductFormContext';
 import InfoTab from './tabs/InfoTab';
 import PricingTab from './tabs/PricingTab';
 import LandingPageTab from './tabs/LandingPageTab';
 import SuggestedProductsTab from './tabs/SuggestedProductsTab';
+import OffersTab from './tabs/OffersTab';
 import ProductPreview from './preview/ProductPreview';
 import VersionHistoryPanel from './ui/VersionHistoryPanel';
 import TemplateSelector from './ui/TemplateSelector';
@@ -47,6 +48,7 @@ function ProductFormInner({ productId, categories, onSave, onCancel, mode }: Omi
     { key: 'pricing', label: 'Pricing', icon: Tag },
     { key: 'landing', label: 'Landing Page', icon: Layout },
     ...(mode === 'edit' ? [{ key: 'suggested', label: 'Sugeridos', icon: Package }] : []),
+    ...(mode === 'edit' ? [{ key: 'ofertas', label: 'Ofertas', icon: Gift }] : []),
   ];
 
   const handleApplyTemplate = (template: any) => {
@@ -306,6 +308,7 @@ function ProductFormInner({ productId, categories, onSave, onCancel, mode }: Omi
             {form.activeTab === 'pricing' && <PricingTab />}
             {form.activeTab === 'landing' && <LandingPageTab slug={form.name?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ''} />}
             {form.activeTab === 'suggested' && <SuggestedProductsTab productId={productId || ''} />}
+            {form.activeTab === 'ofertas' && <OffersTab />}
           </div>
         </div>
 

@@ -2,8 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, X, Check, ShoppingCart, Truck, Package, Gift, CreditCard } from 'lucide-react';
+import { Loader2, X, Check, ShoppingCart, Truck, Package, Gift, CreditCard, Tag, Layers } from 'lucide-react';
 import DiscountPopup from '@/components/ui/DiscountPopup';
+
+interface Offer {
+  id: string;
+  productId: string;
+  name: string;
+  description: string | null;
+  type: string; // "quantity" | "addon"
+  quantity: number;
+  price: number | string;
+  linkedProductId: string | null;
+  imageUrl: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}
 
 const UBIGEO: Record<string, Record<string, string[]>> = {
   'Lima': { 'Lima': ['Miraflores', 'San Isidro', 'Jesus Maria', 'Magdalena', 'San Borja', 'Surco', 'San Martin de Porres', 'Comas', 'Los Olivos', 'Rimac', 'Cercado', 'Pueblo Libre', 'Brena', 'La Victoria', 'San Luis', 'El Agustino', 'Ate', 'Santa Anita', 'Chorrillos', 'San Juan de Miraflores', 'Villa Maria del Triunfo', 'Villa El Salvador', 'San Juan de Lurigancho', 'Carabayllo', 'Puente Piedra', 'Ancón', 'Santa Rosa'] },
@@ -53,6 +67,9 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
   const [orderNumber, setOrderNumber] = useState('');
   const [mpFailed, setMpFailed] = useState(false);
   const [mpErrorDetail, setMpErrorDetail] = useState('');
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [selectedOffer, setSelectedOffer] = useState<string>('main');
+  const [linkedProducts, setLinkedProducts] = useState<Record<string, any>>({});
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -75,6 +92,34 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
         .then(data => {
           const items = Array.isArray(data.data) ? data.data : [];
           setCrossSellProducts(items.filter((p: any) => product.crossSellProductIds.includes(p.id)));
+        })
+        .catch(() => {});
+    }
+  }, [product]);
+
+  // Fetch offers for the product
+  useEffect(() => {
+    if (product?.id) {
+      fetch(`/api/v1/offers?product_id=${product.id}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.data) {
+            setOffers(data.data);
+            // Fetch linked products for addon offers
+            const addonOffers = data.data.filter((o: Offer) => o.type === 'addon' && o.linkedProductId);
+            const linkedIds = addonOffers.map((o: Offer) => o.linkedProductId);
+            if (linkedIds.length > 0) {
+              fetch(`/api/v1/products?limit=50`)
+                .then(r2 => r2.json())
+                .then(d2 => {
+                  const allProducts = Array.isArray(d2.data) ? d2.data : [];
+                  const map: Record<string, any> = {};
+                  allProducts.forEach((p: any) => { map[p.id] = p; });
+                  setLinkedProducts(map);
+                })
+                .catch(() => {});
+            }
+          }
         })
         .catch(() => {});
     }
@@ -151,6 +196,24 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
     return num;
   };
 
+  // Get the active offer object (null for "main")
+  const activeOffer = selectedOffer !== 'main' ? offers.find(o => o.id === selectedOffer) || null : null;
+
+  // Calculate price based on selected offer
+  const getOfferPrice = (): number => {
+    if (!activeOffer) {
+      return applyExtraDiscount(getFinalPrice(rawProductPrice, product?.discountPercent));
+    }
+    if (activeOffer.type === 'quantity') {
+      return applyExtraDiscount(Number(activeOffer.price) || 0);
+    }
+    if (activeOffer.type === 'addon' && activeOffer.linkedProductId) {
+      const linkedPrice = Number(linkedProducts[activeOffer.linkedProductId]?.price) || 0;
+      return applyExtraDiscount((getFinalPrice(rawProductPrice, product?.discountPercent)) + (Number(activeOffer.price) || 0));
+    }
+    return applyExtraDiscount(getFinalPrice(rawProductPrice, product?.discountPercent));
+  };
+
   if (!open || !product) return null;
 
   const departments = Object.keys(UBIGEO);
@@ -159,11 +222,18 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
 
   // Calculate prices - use product directly
   const rawProductPrice = Number(product?.price) || 0;
-  const productFinalPrice = applyExtraDiscount(getFinalPrice(rawProductPrice, product?.discountPercent));
+  const productFinalPrice = getOfferPrice();
   const extraItemsTotal = extraItems.reduce((sum, item) => sum + applyExtraDiscount(getFinalPrice(Number(item.price) || 0, item.discountPercent || 0)), 0);
   const suggestedTotal = selectedSuggested.reduce((sum, p) => sum + applyExtraDiscount(p.price, true), 0);
+
+  // For addon offers, include linked product in allItems
+  const addonLinkedItem = (activeOffer?.type === 'addon' && activeOffer.linkedProductId && linkedProducts[activeOffer.linkedProductId])
+    ? [{ ...linkedProducts[activeOffer.linkedProductId], price: applyExtraDiscount(Number(activeOffer.price) || 0), quantity: 1, type: 'addon' as const }]
+    : [];
+
   const allItems = [
-    { ...product, price: productFinalPrice, quantity: 1, type: 'main' as const },
+    { ...product, price: activeOffer?.type === 'addon' ? applyExtraDiscount(getFinalPrice(rawProductPrice, product?.discountPercent)) : productFinalPrice, quantity: activeOffer?.type === 'quantity' ? activeOffer.quantity : 1, type: 'main' as const, offerId: activeOffer?.id || 'main' },
+    ...addonLinkedItem,
     ...extraItems.map(e => ({ ...e, price: applyExtraDiscount(getFinalPrice(Number(e.price) || 0, e.discountPercent || 0)), quantity: 1, type: 'extra' as const })),
   ];
 
@@ -195,9 +265,10 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
           name: item.name || product.name,
           price: Number(item.price) || 0,
           originalPrice: item.type === 'main' ? Number(product?.price) || 0 : Number(item.price) || 0,
-          quantity: 1,
+          quantity: item.quantity || 1,
           productId: item.id,
-          offerId: item.id,
+          offerId: item.offerId || item.id,
+          isOfferItem: item.type === 'main' && activeOffer ? true : item.type === 'addon',
         })),
         ...selectedSuggested.map(sp => ({
           name: sp.name,
@@ -335,6 +406,71 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
           </div>
         ) : (
           <div className="p-4 space-y-4">
+            {/* Offer Cards - at TOP of modal */}
+            {offers.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-gray-700 mb-2">Elige tu oferta</p>
+                <div className="space-y-2">
+                  {/* Main product card (default selected) */}
+                  <button
+                    onClick={() => setSelectedOffer('main')}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${selectedOffer === 'main' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                      <Tag size={18} className="text-green-600" />
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                      <p className="text-[10px] text-gray-500">Producto individual</p>
+                    </div>
+                    <span className="text-sm font-bold text-green-600 shrink-0">S/ {getFinalPrice(rawProductPrice, product?.discountPercent).toFixed(2)}</span>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedOffer === 'main' ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                      {selectedOffer === 'main' && <Check size={12} className="text-white" />}
+                    </div>
+                  </button>
+
+                  {/* Offer cards */}
+                  {offers.map((offer) => {
+                    const isSelected = selectedOffer === offer.id;
+                    const offerPrice = Number(offer.price) || 0;
+                    let displayPrice = offerPrice;
+                    let unitLabel = '';
+                    if (offer.type === 'quantity') {
+                      unitLabel = `${offer.quantity} unidades`;
+                    } else if (offer.type === 'addon') {
+                      const linked = linkedProducts[offer.linkedProductId || ''];
+                      const linkedPrice = Number(linked?.price) || 0;
+                      displayPrice = getFinalPrice(rawProductPrice, product?.discountPercent) + offerPrice;
+                      unitLabel = linked ? `+ ${linked.name}` : 'Producto adicional';
+                    }
+                    return (
+                      <button
+                        key={offer.id}
+                        onClick={() => setSelectedOffer(isSelected ? 'main' : offer.id)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                      >
+                        {offer.imageUrl ? (
+                          <img src={offer.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center shrink-0">
+                            <Layers size={18} className="text-orange-600" />
+                          </div>
+                        )}
+                        <div className="flex-1 text-left min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{offer.name}</p>
+                          <p className="text-[10px] text-gray-500">{offer.description || unitLabel}</p>
+                        </div>
+                        <span className="text-sm font-bold text-green-600 shrink-0">S/ {displayPrice.toFixed(2)}</span>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                          {isSelected && <Check size={12} className="text-white" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Product Summary */}
             <div className="bg-gray-50 rounded-xl p-4 flex gap-3">
               {product.images?.[0] ? (
@@ -604,11 +740,15 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
               onClick={() => {
                 if (!validate()) return;
                 const allItemsText = [
-                  `- ${product.name} x1 = S/ ${productFinalPrice.toFixed(2)}`,
+                  `- ${product.name} x${activeOffer?.type === 'quantity' ? activeOffer.quantity : 1} = S/ ${productFinalPrice.toFixed(2)}`,
+                  ...(activeOffer?.type === 'addon' && linkedProducts[activeOffer.linkedProductId || '']
+                    ? [`- ${linkedProducts[activeOffer.linkedProductId!].name} x1 = S/ ${Number(activeOffer.price).toFixed(2)}`]
+                    : []),
                   ...extraItems.map(e => `- ${e.name} x1 = S/ ${Number(e.price).toFixed(2)}`),
                   ...selectedSuggested.map(sp => `- ${sp.name} x1 = S/ ${Number(sp.price).toFixed(2)}`),
                 ].join('%0A');
-                const msg = `🛒 *Nuevo Pedido - AdriSu Kids*%0A%0A👤 *Cliente:* ${encodeURIComponent(form.name)}%0A📱 *Celular:* ${form.phone}%0A📧 *Email:* ${encodeURIComponent(form.email || 'No proporcionado')}%0A%0A📦 *Productos:*%0A${allItemsText}%0A%0A💰 *Resumen:*%0A- Subtotal: S/ ${subtotal.toFixed(2)}%0A- Envio (aproximadamente): S/ ${shipping.toFixed(2)}%0A${discountApplied ? `- Descuento extra (-${extraDiscountPercent}%): aplicado%0A` : ''}- *TOTAL: S/ ${total.toFixed(2)}*%0A%0A📍 *Direccion de envio:*%0A${encodeURIComponent(form.department)} - ${encodeURIComponent(form.province)} - ${encodeURIComponent(form.district)}%0A${encodeURIComponent(form.address)}%0ARef: ${encodeURIComponent(form.reference || 'Sin referencia')}`;
+                const offerLabel = activeOffer ? `%0A🏷️ *Oferta:* ${encodeURIComponent(activeOffer.name)}` : '';
+                const msg = `🛒 *Nuevo Pedido - AdriSu Kids*%0A%0A👤 *Cliente:* ${encodeURIComponent(form.name)}%0A📱 *Celular:* ${form.phone}%0A📧 *Email:* ${encodeURIComponent(form.email || 'No proporcionado')}%0A%0A📦 *Productos:*%0A${allItemsText}${offerLabel}%0A%0A💰 *Resumen:*%0A- Subtotal: S/ ${subtotal.toFixed(2)}%0A- Envio (aproximadamente): S/ ${shipping.toFixed(2)}%0A${discountApplied ? `- Descuento extra (-${extraDiscountPercent}%): aplicado%0A` : ''}- *TOTAL: S/ ${total.toFixed(2)}*%0A%0A📍 *Direccion de envio:*%0A${encodeURIComponent(form.department)} - ${encodeURIComponent(form.province)} - ${encodeURIComponent(form.district)}%0A${encodeURIComponent(form.address)}%0ARef: ${encodeURIComponent(form.reference || 'Sin referencia')}`;
                 window.open(`https://wa.me/51951308866?text=${msg}`, '_blank');
                 setStep('done');
                 setOrderNumber('PENDIENTE');

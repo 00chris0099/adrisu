@@ -231,6 +231,7 @@ model Product {
   category  Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   versions  ProductVersion[]
   suggestedProducts SuggestedProduct[]
+  offers    Offer[]
   orderItems OrderItem[]
   pickListItems PickListItem[]
   returnItems ReturnItem[]
@@ -1093,4 +1094,28 @@ model BlogPost {
   author User? @relation(fields: [authorId], references: [id])
 
   @@map("blog_posts")
+}
+
+// ============================================================================
+// OFFERS (Per-product purchasing options)
+// ============================================================================
+
+model Offer {
+  id              String   @id @default(uuid()) @db.Uuid
+  productId       String   @map("product_id") @db.Uuid
+  name            String
+  description     String?
+  type            String   @default("quantity") // "quantity" | "addon"
+  quantity        Int      @default(1)
+  price           Decimal  @db.Decimal(10, 2)
+  linkedProductId String?  @map("linked_product_id") @db.Uuid
+  imageUrl        String?  @map("image_url")
+  sortOrder       Int      @default(0) @map("sort_order")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("offers")
 }

@@ -8,14 +8,13 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, Warehouse,
   Truck, BarChart3, Shield, Settings, Menu, X, ChevronRight,
   MessageSquare, UserCog, DollarSign, Tag, Percent, TrendingUp,
-  LogOut, ChevronLeft, User, FileText, Gift
+  LogOut, ChevronLeft, User, FileText
 } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/tienda', label: 'Tienda', icon: Package },
-  { href: '/ofertas', label: 'Ofertas', icon: Gift },
   { href: '/operaciones', label: 'Operaciones', icon: ShoppingCart },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/finanzas', label: 'Finanzas', icon: DollarSign },

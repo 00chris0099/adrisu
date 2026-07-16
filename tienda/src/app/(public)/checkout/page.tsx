@@ -4,10 +4,24 @@ import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, ShoppingCart, Package, Truck, CreditCard, MapPin, Phone, ShieldCheck, MessageCircle, ChevronDown, Plus, Minus, X } from 'lucide-react';
+import { Loader2, CheckCircle, ShoppingCart, Package, Truck, CreditCard, MapPin, Phone, ShieldCheck, MessageCircle, ChevronDown, Plus, Minus, X, Check, Tag, Layers } from 'lucide-react';
 import AddressAutocomplete from '@/components/ui/AddressAutocomplete';
 import SuggestedProducts from '@/components/checkout/SuggestedProducts';
 import { isValidPeruPhone, isValidEmail } from '@/lib/ubigeo';
+
+interface ProductOffer {
+  id: string;
+  productId: string;
+  name: string;
+  description: string | null;
+  type: string; // "quantity" | "addon"
+  quantity: number;
+  price: number | string;
+  linkedProductId: string | null;
+  imageUrl: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}
 
 /**
  * RF-27: Save abandoned checkout when user leaves page
@@ -111,6 +125,9 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [offers, setOffers] = useState<any[]>([]);
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
+  const [productOffers, setProductOffers] = useState<Record<string, ProductOffer[]>>({});
+  const [selectedProductOffers, setSelectedProductOffers] = useState<Record<string, string>>({});
+  const [linkedProducts, setLinkedProducts] = useState<Record<string, any>>({});
   const [selectedSuggestedProducts, setSelectedSuggestedProducts] = useState<any[]>([]);
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
@@ -125,6 +142,49 @@ export default function CheckoutPage() {
     fetch('/api/v1/offers').then(r => r.json()).then(d => setOffers(d.data || [])).catch(() => {});
   }, []);
 
+  // Fetch per-product offers for each cart item
+  useEffect(() => {
+    const fetchAll = async () => {
+      const results: Record<string, ProductOffer[]> = {};
+      const linkedIdsSet = new Set<string>();
+      for (const item of items) {
+        if (!item.productId) continue;
+        try {
+          const res = await fetch(`/api/v1/offers?product_id=${item.productId}`);
+          const data = await res.json();
+          if (data.data && data.data.length > 0) {
+            results[item.productId] = data.data;
+            // Collect linked product IDs for addon offers
+            data.data.forEach((o: ProductOffer) => {
+              if (o.type === 'addon' && o.linkedProductId) linkedIdsSet.add(o.linkedProductId);
+            });
+          }
+        } catch {}
+      }
+      setProductOffers(results);
+      // Set default selected offers to 'main' for each product
+      setSelectedProductOffers(prev => {
+        const next = { ...prev };
+        for (const item of items) {
+          if (item.productId && !next[item.productId]) next[item.productId] = 'main';
+        }
+        return next;
+      });
+      // Fetch linked products
+      if (linkedIdsSet.size > 0) {
+        try {
+          const res = await fetch(`/api/v1/products?limit=50`);
+          const data = await res.json();
+          const allProducts = Array.isArray(data.data) ? data.data : [];
+          const map: Record<string, any> = {};
+          allProducts.forEach((p: any) => { map[p.id] = p; });
+          setLinkedProducts(map);
+        } catch {}
+      }
+    };
+    if (items.length > 0) fetchAll();
+  }, [items]);
+
   // Get unique product IDs from cart items
   const productIds = [...new Set(items.map(item => item.productId).filter(Boolean))];
 
@@ -138,6 +198,51 @@ export default function CheckoutPage() {
   };
 
   const suggestedTotal = selectedSuggestedProducts.reduce((sum, p) => sum + p.price, 0);
+
+  // Calculate per-product offer-adjusted prices
+  const getItemPrice = (item: any): number => {
+    const offerId = selectedProductOffers[item.productId];
+    if (!offerId || offerId === 'main') return item.price;
+    const productOfferList = productOffers[item.productId] || [];
+    const offer = productOfferList.find((o: ProductOffer) => o.id === offerId);
+    if (!offer) return item.price;
+    if (offer.type === 'quantity') return Number(offer.price) || 0;
+    if (offer.type === 'addon') {
+      const linkedPrice = Number(linkedProducts[offer.linkedProductId || '']?.price) || 0;
+      return item.price + (Number(offer.price) || 0);
+    }
+    return item.price;
+  };
+
+  const getItemQuantity = (item: any): number => {
+    const offerId = selectedProductOffers[item.productId];
+    if (!offerId || offerId === 'main') return item.quantity;
+    const productOfferList = productOffers[item.productId] || [];
+    const offer = productOfferList.find((o: ProductOffer) => o.id === offerId);
+    if (offer?.type === 'quantity') return offer.quantity * item.quantity;
+    return item.quantity;
+  };
+
+  // Get addon linked items from selected offers
+  const addonItems = items.reduce((acc: any[], item) => {
+    const offerId = selectedProductOffers[item.productId];
+    if (!offerId || offerId === 'main') return acc;
+    const productOfferList = productOffers[item.productId] || [];
+    const offer = productOfferList.find((o: ProductOffer) => o.id === offerId);
+    if (offer?.type === 'addon' && offer.linkedProductId && linkedProducts[offer.linkedProductId]) {
+      const lp = linkedProducts[offer.linkedProductId];
+      acc.push({
+        productId: lp.id,
+        name: lp.name,
+        price: Number(offer.price) || 0,
+        image: lp.images?.[0] || '',
+        quantity: item.quantity,
+        isAddon: true,
+        parentProductId: item.productId,
+      });
+    }
+    return acc;
+  }, []);
 
   const validate = (): boolean => {
     const e: FormErrors = {};
@@ -159,15 +264,31 @@ export default function CheckoutPage() {
     try {
       const offerDiscount = selectedOffers.reduce((sum, oid) => {
         const o = offers.find((of: any) => of.id === oid);
-        return sum + (o ? (total() * o.discountPercent / 100) : 0);
+        return sum + (o ? (subtotal * o.discountPercent / 100) : 0);
       }, 0);
-      const finalTotal = total() + (total() >= 150 ? 0 : 10) - offerDiscount + suggestedTotal;
+      const finalTotal = subtotal + shipping - offerDiscount + suggestedTotal;
 
       const orderRes = await fetch('/api/v1/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: [
-            ...items.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity, productId: i.productId, sku: i.productId })),
+            ...items.map((i) => ({
+              name: i.name,
+              price: getItemPrice(i),
+              quantity: getItemQuantity(i),
+              productId: i.productId,
+              sku: i.productId,
+              offerId: selectedProductOffers[i.productId] || 'main',
+            })),
+            ...addonItems.map((a) => ({
+              name: a.name,
+              price: a.price,
+              quantity: a.quantity,
+              productId: a.productId,
+              sku: `addon-${a.productId}`,
+              isAddon: true,
+              parentProductId: a.parentProductId,
+            })),
             ...selectedSuggestedProducts.map((p) => ({ name: p.name, price: p.price, quantity: 1, productId: p.id, sku: `suggested-${p.id}`, isSuggested: true })),
           ],
           customer: { name: form.name, email: form.email, phone: form.phone },
@@ -201,7 +322,7 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
-  const subtotal = total();
+  const subtotal = items.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0) + addonItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal >= 150 ? 0 : 10;
   const offerDiscount = selectedOffers.reduce((sum, oid) => {
     const o = offers.find((of: any) => of.id === oid);
@@ -377,11 +498,18 @@ export default function CheckoutPage() {
               if (items.length === 0) { alert('Tu carrito esta vacio'); return; }
               if (!validate()) return;
 
-              const itemsList = items.map(i => `- ${i.name} x${i.quantity} = S/ ${(i.price * i.quantity).toFixed(2)}`).join('%0A');
+              const itemsList = items.map(i => {
+                const price = getItemPrice(i);
+                const qty = getItemQuantity(i);
+                return `- ${i.name} x${qty} = S/ ${(price * qty).toFixed(2)}`;
+              }).join('%0A');
+              const addonList = addonItems.length > 0
+                ? '%0A🎁 *Productos incluidos en oferta:*%0A' + addonItems.map(a => `- ${a.name} = S/ ${(a.price * a.quantity).toFixed(2)}`).join('%0A')
+                : '';
               const suggestedList = selectedSuggestedProducts.length > 0
                 ? '%0A📦 *Productos sugeridos:*%0A' + selectedSuggestedProducts.map(p => `- ${p.name} = S/ ${p.price.toFixed(2)}`).join('%0A')
                 : '';
-              const msg = `🛒 *Nuevo Pedido - AdriSu Kids*%0A%0A👤 *Cliente:* ${encodeURIComponent(form.name)}%0A📱 *Celular:* ${form.phone}%0A📧 *Email:* ${encodeURIComponent(form.email || 'No proporcionado')}%0A%0A📦 *Productos:*%0A${itemsList}${suggestedList}%0A%0A💰 *Resumen:*%0A- Subtotal: S/ ${subtotal.toFixed(2)}%0A- Envio (aproximadamente): S/ ${shipping.toFixed(2)}%0A${offerDiscount > 0 ? `- Descuento: -S/ ${offerDiscount.toFixed(2)}%0A` : ''}${suggestedTotal > 0 ? `- Sugeridos: +S/ ${suggestedTotal.toFixed(2)}%0A` : ''}- *TOTAL: S/ ${finalTotal.toFixed(2)}*%0A%0A📍 *Direccion de envio:*%0A${encodeURIComponent(form.department)} - ${encodeURIComponent(form.province)} - ${encodeURIComponent(form.district)}%0A${encodeURIComponent(form.address)}%0ARef: ${encodeURIComponent(form.reference || 'Sin referencia')}`;
+              const msg = `🛒 *Nuevo Pedido - AdriSu Kids*%0A%0A👤 *Cliente:* ${encodeURIComponent(form.name)}%0A📱 *Celular:* ${form.phone}%0A📧 *Email:* ${encodeURIComponent(form.email || 'No proporcionado')}%0A%0A📦 *Productos:*%0A${itemsList}${addonList}${suggestedList}%0A%0A💰 *Resumen:*%0A- Subtotal: S/ ${subtotal.toFixed(2)}%0A- Envio (aproximadamente): S/ ${shipping.toFixed(2)}%0A${offerDiscount > 0 ? `- Descuento: -S/ ${offerDiscount.toFixed(2)}%0A` : ''}${suggestedTotal > 0 ? `- Sugeridos: +S/ ${suggestedTotal.toFixed(2)}%0A` : ''}- *TOTAL: S/ ${finalTotal.toFixed(2)}*%0A%0A📍 *Direccion de envio:*%0A${encodeURIComponent(form.department)} - ${encodeURIComponent(form.province)} - ${encodeURIComponent(form.district)}%0A${encodeURIComponent(form.address)}%0ARef: ${encodeURIComponent(form.reference || 'Sin referencia')}`;
               window.open(`https://wa.me/51951308866?text=${msg}`, '_blank');
               clearCart();
             }} disabled={loading}
@@ -395,7 +523,31 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl p-5 border border-gray-100 sticky top-20 space-y-4">
               <h3 className="font-semibold">Resumen</h3>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>S/ {subtotal}</span></div>
+                {items.map((item) => {
+                  const adjustedPrice = getItemPrice(item);
+                  const hasOffer = selectedProductOffers[item.productId] && selectedProductOffers[item.productId] !== 'main';
+                  return (
+                    <div key={item.productId}>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">{item.name} x{getItemQuantity(item)}</span>
+                        <span className={hasOffer ? 'text-green-600 font-medium' : ''}>S/ {(adjustedPrice * item.quantity).toFixed(2)}</span>
+                      </div>
+                      {hasOffer && (
+                        <div className="flex justify-between text-[10px] text-gray-400">
+                          <span className="ml-1">Original: S/ {(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="text-green-500">ahorro</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {addonItems.map((addon) => (
+                  <div key={`addon-${addon.productId}`} className="flex justify-between text-blue-600">
+                    <span>+ {addon.name}</span>
+                    <span>S/ {(addon.price * addon.quantity).toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>S/ {subtotal.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Envio (aproximadamente)</span><span>{shipping === 0 ? 'Gratis' : `S/ ${shipping}`}</span></div>
                 {offerDiscount > 0 && <div className="flex justify-between text-green-600"><span>Descuento ofertas</span><span>-S/ {offerDiscount.toFixed(2)}</span></div>}
                 {suggestedTotal > 0 && (
@@ -409,7 +561,80 @@ export default function CheckoutPage() {
               {subtotal < 150 && <p className="text-xs text-gray-400 text-center">Envio gratis en compras mayores a S/ 150</p>}
             </div>
           </div>
-        </div>
+                )}
+                <div className="border-t pt-2 flex justify-between font-bold text-lg"><span>Total</span><span className="text-green-600">S/ {finalTotal.toFixed(2)}</span></div>
+              </div>
+              {subtotal < 150 && <p className="text-xs text-gray-400 text-center">Envio gratis en compras mayores a S/ 150</p>}
+              </div>
+
+              {/* Per-product offer selectors */}
+              {items.map((item) => {
+                const itemOffers = productOffers[item.productId];
+                if (!itemOffers || itemOffers.length === 0) return null;
+                const currentOffer = selectedProductOffers[item.productId] || 'main';
+                return (
+                  <div key={`offers-${item.productId}`} className="mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-xs font-medium text-gray-500 mb-2">Ofertas para: {item.name}</p>
+                    <div className="space-y-1.5">
+                      {/* Main option */}
+                      <button
+                        onClick={() => setSelectedProductOffers(prev => ({ ...prev, [item.productId]: 'main' }))}
+                        className={`w-full flex items-center gap-2.5 p-2 rounded-lg border-2 transition-all text-left ${currentOffer === 'main' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                      >
+                        <div className="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center shrink-0">
+                          <Tag size={14} className="text-green-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-900">Producto individual</p>
+                        </div>
+                        <span className="text-xs font-bold text-green-600">S/ {item.price}</span>
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${currentOffer === 'main' ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                          {currentOffer === 'main' && <Check size={10} className="text-white" />}
+                        </div>
+                      </button>
+                      {/* Offer options */}
+                      {itemOffers.map((offer) => {
+                        const isSelected = currentOffer === offer.id;
+                        const offerPrice = Number(offer.price) || 0;
+                        let displayPrice = offerPrice;
+                        let unitLabel = '';
+                        if (offer.type === 'quantity') {
+                          unitLabel = `${offer.quantity} unidades`;
+                        } else if (offer.type === 'addon') {
+                          const linked = linkedProducts[offer.linkedProductId || ''];
+                          displayPrice = item.price + offerPrice;
+                          unitLabel = linked ? `+ ${linked.name}` : 'Producto adicional';
+                        }
+                        return (
+                          <button
+                            key={offer.id}
+                            onClick={() => setSelectedProductOffers(prev => ({ ...prev, [item.productId]: isSelected ? 'main' : offer.id }))}
+                            className={`w-full flex items-center gap-2.5 p-2 rounded-lg border-2 transition-all text-left ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                          >
+                            {offer.imageUrl ? (
+                              <img src={offer.imageUrl} alt="" className="w-8 h-8 rounded-md object-cover shrink-0" />
+                            ) : (
+                              <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center shrink-0">
+                                <Layers size={14} className="text-orange-600" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-gray-900 truncate">{offer.name}</p>
+                              <p className="text-[10px] text-gray-500">{offer.description || unitLabel}</p>
+                            </div>
+                            <span className="text-xs font-bold text-green-600 shrink-0">S/ {displayPrice.toFixed(2)}</span>
+                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                              {isSelected && <Check size={10} className="text-white" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
       </main>
 
     </div>
