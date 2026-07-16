@@ -106,8 +106,12 @@ export default function CheckoutModal({ open, onClose, product, selectedOffer }:
       onClose();
       return;
     }
-    // Always show popup when closing
-    setShowDiscountPopup(true);
+    // Only show popup if product has discountPopup enabled
+    if (product?.discountPopup?.enabled) {
+      setShowDiscountPopup(true);
+    } else {
+      onClose();
+    }
   };
 
   // User accepts discount - apply and keep checkout open
@@ -689,7 +693,7 @@ export default function CheckoutModal({ open, onClose, product, selectedOffer }:
       {showDiscountPopup && (
         <DiscountPopup
           config={{
-            enabled: true,
+            enabled: product?.discountPopup?.enabled || false,
             title: product?.discountPopup?.title || '¡Descuento exclusivo!',
             description: product?.discountPopup?.description || `Obtén un ${extraDiscountPercent}% extra de descuento en tu compra. ¡Aprovecha esta oferta!`,
             discountPercent: product?.discountPopup?.discountPercent || extraDiscountPercent,

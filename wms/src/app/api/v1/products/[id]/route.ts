@@ -53,7 +53,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
     const body = await request.json();
     console.log('[API] PUT /api/v1/products/' + params.id, { enabledPriceTypes: body.enabledPriceTypes, prices: body.prices, variants: body.variants?.length });
     const {
-      name, model, description, shortDescription, categoryId, status, tags, images, brand,
+      name, slug: newSlug, model, description, shortDescription, categoryId, status, tags, images, brand,
       height, width, depth, color, materials, recommendedAge, warrantyDays, originCountry,
       weight, weightUnit, lowStockAlert, discountPopup, variants, enabledPriceTypes, prices, ctaText, crossSellProductIds
     } = body;
@@ -61,11 +61,17 @@ export async function PUT(request: NextRequest, { params }: Props) {
     const existing = await prisma.product.findUnique({ where: { id: params.id } });
     if (!existing) return apiError('Product not found', 404);
 
+    // Generate slug from name if name changed
+    const slug = newSlug || (name ? name.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : existing.slug);
+
     // Update product fields
     const updated = await prisma.product.update({
       where: { id: params.id },
       data: {
         ...(name && { name }),
+        ...(slug && { slug }),
         ...(model !== undefined && { model }),
         ...(description !== undefined && { description }),
         ...(shortDescription !== undefined && { shortDescription }),

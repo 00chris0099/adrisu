@@ -159,8 +159,8 @@ function ProductFormInner({ productId, categories, onSave, onCancel, mode }: Omi
 
       await onSave(savedData);
 
-      // Save landing page blocks
-      if (slug && form.landingBlocks.length > 0) {
+      // Save landing page blocks (also handles clearing blocks)
+      if (slug) {
         await fetch(`/api/v1/landings/${slug}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

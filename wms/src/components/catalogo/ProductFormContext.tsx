@@ -220,7 +220,7 @@ export function useProductForm() {
 // ============================================================================
 
 function generateId() {
-  return Math.random().toString(36).substring(2, 9);
+  return 'new-' + Math.random().toString(36).substring(2, 9);
 }
 
 function generateSku(parentSku: string, index: number) {

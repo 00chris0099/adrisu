@@ -7,12 +7,17 @@ export default function ExitIntentPopup() {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
+  const [enabled, setEnabled] = useState(true);
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!mounted) return;
-    // Check if already shown this session
+    // Check if popup is enabled via env var or API
+    const popupEnabled = process.env.NEXT_PUBLIC_EXIT_POPUP_ENABLED !== 'false';
+    setEnabled(popupEnabled);
+
+    if (!popupEnabled) return;
     if (sessionStorage.getItem('exit-popup-shown')) return;
 
     const handleMouseLeave = (e: MouseEvent) => {
@@ -22,7 +27,6 @@ export default function ExitIntentPopup() {
       }
     };
 
-    // Generate random discount code
     const codes = ['ADRI5', 'BEBE5', 'KIDS5', 'AMOR5', 'DESCUENTO5'];
     setDiscountCode(codes[Math.floor(Math.random() * codes.length)]);
 
@@ -35,7 +39,7 @@ export default function ExitIntentPopup() {
     sessionStorage.setItem('exit-popup-shown', '1');
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || !enabled) return null;
 
   return (
     <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
