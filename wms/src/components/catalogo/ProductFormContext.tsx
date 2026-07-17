@@ -36,6 +36,7 @@ interface ProductFormState {
   // Basic info
   sku: string;
   name: string;
+  slug: string;
   model: string;
   description: string;
   shortDescription: string;
@@ -206,6 +207,7 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
     // Basic info
     sku: initialData?.sku || '',
     name: initialData?.name || '',
+    slug: initialData?.slug || '',
     model: initialData?.model || '',
     description: initialData?.description || '',
     shortDescription: initialData?.shortDescription || '',

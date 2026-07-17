@@ -1,9 +1,6 @@
 import { NextRequest } from 'next/server';
-import { readFile } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 
-const WMS_LANDINGS_DIR = path.join(process.cwd(), '..', 'wms', 'public', 'landings');
+const WMS_INTERNAL_URL = process.env.WMS_INTERNAL_URL || 'http://localhost:3000';
 
 interface Props {
   params: { slug: string };
@@ -11,16 +8,16 @@ interface Props {
 
 export async function GET(_request: NextRequest, { params }: Props) {
   try {
-    const filePath = path.join(WMS_LANDINGS_DIR, `${params.slug}.json`);
+    const res = await fetch(`${WMS_INTERNAL_URL}/api/v1/landings/${params.slug}`, {
+      cache: 'no-store',
+    });
 
-    if (!existsSync(filePath)) {
+    if (!res.ok) {
       return Response.json({ success: true, data: null });
     }
 
-    const raw = await readFile(filePath, 'utf-8');
-    const landing = JSON.parse(raw);
-
-    return Response.json({ success: true, data: landing });
+    const data = await res.json();
+    return Response.json({ success: true, data: data.data || null });
   } catch {
     return Response.json({ success: true, data: null });
   }

@@ -10,6 +10,7 @@ interface ImageBlockEditorProps {
 
 export default function ImageBlockEditor({ content, onUpdate }: ImageBlockEditorProps) {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const compressImage = (file: File): Promise<File> => {
@@ -53,13 +54,18 @@ export default function ImageBlockEditor({ content, onUpdate }: ImageBlockEditor
     if (!file) return;
 
     setUploading(true);
+    setError(null);
     try {
       const compressed = await compressImage(file);
       const url = await uploadToImgBB(compressed);
       if (url) {
         onUpdate({ url });
+      } else {
+        setError('Error al subir imagen. Verifica que IMGBB_API_KEY este configurada.');
       }
-    } catch {}
+    } catch {
+      setError('Error al subir imagen. Verifica la conexion y la API key.');
+    }
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -101,6 +107,9 @@ export default function ImageBlockEditor({ content, onUpdate }: ImageBlockEditor
           )}
           {uploading ? 'Cargando imagen...' : 'Click para seleccionar imagen del dispositivo'}
         </button>
+        {error && (
+          <p className="mt-2 text-xs text-red-400">{error}</p>
+        )}
       </div>
 
       {/* Caption */}

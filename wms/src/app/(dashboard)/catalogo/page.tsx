@@ -126,7 +126,7 @@ export default function CatalogoPage() {
     // Load landing page blocks
     let landingBlocks: any[] = [];
     try {
-      const slug = product.name?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '';
+      const slug = product.slug || product.name?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '';
       const res = await fetch(`/api/v1/landings/${slug}`);
       if (res.ok) {
         const data = await res.json();

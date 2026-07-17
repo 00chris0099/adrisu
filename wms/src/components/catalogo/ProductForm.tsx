@@ -92,11 +92,13 @@ function ProductFormInner({ productId, categories, onSave, onCancel, mode }: Omi
     setSaving(true);
 
     try {
-      const slug = form.name.toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+      const slug = mode === 'edit' && form.slug
+        ? form.slug
+        : form.name.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
 
       const savedData = {
         sku: form.sku || undefined,

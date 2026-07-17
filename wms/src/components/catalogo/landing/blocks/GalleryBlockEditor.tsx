@@ -11,6 +11,7 @@ interface GalleryBlockEditorProps {
 export default function GalleryBlockEditor({ content, onUpdate }: GalleryBlockEditorProps) {
   const images = content.images || [];
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const addImage = () => {
@@ -67,6 +68,7 @@ export default function GalleryBlockEditor({ content, onUpdate }: GalleryBlockEd
     if (!file) return;
 
     setUploadingIndex(index);
+    setError(null);
     try {
       const compressed = await compressImage(file);
       const url = await uploadToImgBB(compressed);
@@ -74,8 +76,12 @@ export default function GalleryBlockEditor({ content, onUpdate }: GalleryBlockEd
         const newImages = [...images];
         newImages[index] = url;
         onUpdate({ images: newImages });
+      } else {
+        setError('Error al subir imagen. Verifica la API key de imgBB en las variables de entorno.');
       }
-    } catch {}
+    } catch {
+      setError('Error al subir imagen.');
+    }
     setUploadingIndex(null);
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index]!.value = '';
@@ -108,6 +114,12 @@ export default function GalleryBlockEditor({ content, onUpdate }: GalleryBlockEd
           <option value={4}>4 columnas</option>
         </select>
       </div>
+
+      {error && (
+        <div className="px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-400">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-2">
         {images.map((url: string, index: number) => (
