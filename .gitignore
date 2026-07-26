@@ -8,6 +8,7 @@ out/
 dist/
 build/
 .turbo/
+*.tsbuildinfo
 
 # Environment variables
 .env
@@ -23,6 +24,9 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Stray folders
+img/
 
 # Debug
 npm-debug.log*

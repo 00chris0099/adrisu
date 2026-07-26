@@ -2,21 +2,19 @@
 set -e
 
 echo "Waiting for PostgreSQL..."
-until pg_isready -h postgres -U adris -d adriskids -q; do
+until pg_isready -h postgres -U adris -d adriskids -q 2>/dev/null; do
   sleep 2
 done
 echo "PostgreSQL is ready!"
 
-echo "Running Prisma migrations..."
+echo "Running Prisma migrations for prisma-wms..."
 cd /app/packages/prisma-wms
-npx prisma db push --skip-generate
-cd /app/packages/prisma
-npx prisma db push --skip-generate
+npm install --prefer-offline 2>/dev/null || npm install
+DATABASE_URL="$DATABASE_URL" npx prisma db push --skip-generate
 
-echo "Seeding database..."
-cd /app/packages/prisma-wms
-npx tsx src/seed.ts
+echo "Running Prisma migrations for prisma..."
 cd /app/packages/prisma
-npx tsx src/seed.ts
+npm install --prefer-offline 2>/dev/null || npm install
+DATABASE_URL="$DATABASE_URL" npx prisma db push --skip-generate
 
 echo "Database initialized!"
