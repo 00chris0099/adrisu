@@ -2,18 +2,18 @@
 
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import ProductCard from '@/components/shop/ProductCard';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Bed, Armchair, Baby, Palette, Bath, ToyBrick, Truck, Shield, RotateCcw, MessageCircle, Package } from 'lucide-react';
+import { Bed, Armchair, Baby, Palette, Bath, ToyBrick, Truck, Shield, RotateCcw, MessageCircle, ArrowRight } from 'lucide-react';
 
 const categories = [
-  { name: 'Camas y Cunas', slug: 'camas-cunas', Icon: Bed, description: 'Cunas, camas, berlines' },
-  { name: 'Sillas Altas', slug: 'sillas-altas', Icon: Armchair, description: 'Para comer y jugar' },
-  { name: 'Carritos', slug: 'carritos', Icon: Baby, description: 'Cochecitos y sillas de auto' },
-  { name: 'Decoracion', slug: 'decoracion', Icon: Palette, description: 'Nursery y accesorios' },
-  { name: 'Banos', slug: 'banos', Icon: Bath, description: 'Tinas e higiene' },
-  { name: 'Juguetes', slug: 'juguetes', Icon: ToyBrick, description: 'Educativos y organization' },
+  { name: 'Camas y Cunas', slug: 'camas-cunas', Icon: Bed },
+  { name: 'Sillas Altas', slug: 'sillas-altas', Icon: Armchair },
+  { name: 'Carritos', slug: 'carritos', Icon: Baby },
+  { name: 'Decoracion', slug: 'decoracion', Icon: Palette },
+  { name: 'Banos', slug: 'banos', Icon: Bath },
+  { name: 'Juguetes', slug: 'juguetes', Icon: ToyBrick },
 ];
 
 const trustBadges = [
@@ -24,25 +24,13 @@ const trustBadges = [
 ];
 
 export default function HomePage() {
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('/api/v1/products?limit=4')
+    fetch('/api/v1/products?limit=8')
       .then(r => r.json())
       .then(data => {
-        if (data.data) {
-          setFeaturedProducts(data.data.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            slug: p.slug,
-            price: p.variants?.[0]?.price || 0,
-            compareAtPrice: p.variants?.[0]?.compareAtPrice,
-            image: p.images?.[0] || '',
-            category: p.category?.name || '',
-            priceConfig: p.priceConfig || null,
-            stock: p.variants?.reduce((s: number, v: any) => s + (v.stock || 0), 0) || 0,
-          })));
-        }
+        if (data.data) setProducts(data.data);
       })
       .catch(() => {});
   }, []);
@@ -53,126 +41,114 @@ export default function HomePage() {
 
       <main className="flex-1 pb-20 md:pb-0">
         {/* Hero */}
-        <section
-          className="relative overflow-hidden flex items-center"
-          style={{
-            minHeight: '500px',
-            backgroundImage: 'url(https://i.ibb.co/kVhw0H2H/Products-decorative-flyer-webpage-2-K-202607111423.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        >
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 via-blue-800/60 to-pink-600/40" />
-          <div className="max-w-7xl mx-auto px-4 text-center relative z-10 py-20 md:py-32">
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight drop-shadow-lg">
-              Muebles para bebes
-              <span className="text-pink-300"> con amor</span>
-            </h1>
-            <p className="mt-4 text-lg text-white/90 max-w-xl mx-auto drop-shadow">
-              Todo lo que tu bebe necesita: camas, sillas, carritos y decoracion.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/tienda" className="bg-pink-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-pink-600 transition-all shadow-lg">
-                Ver catalogo
-              </Link>
+        <section className="relative overflow-hidden bg-gray-950">
+          <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'url(https://i.ibb.co/kVhw0H2H/Products-decorative-flyer-webpage-2-K-202607111423.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-950/70 to-gray-950/50" />
+          <div className="container-wide relative z-10 py-20 md:py-32">
+            <div className="max-w-2xl">
+              <p className="text-brand-400 text-sm font-medium tracking-wide uppercase mb-4">AdriSu Kids</p>
+              <h1 className="text-display-lg text-white">
+                Muebles para bebes
+                <span className="text-brand-400"> con amor</span>
+              </h1>
+              <p className="mt-5 text-lg text-gray-400 max-w-md leading-relaxed">
+                Todo lo que tu bebe necesita: camas, sillas, carritos y decoracion. Calidad premium en todo el Peru.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <Link href="/tienda" className="btn-primary gap-2">
+                  Ver catalogo
+                  <ArrowRight size={16} />
+                </Link>
+                <Link href="/tienda?categoria=camas-cunas" className="btn-secondary">
+                  Camas y Cunas
+                </Link>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Categories */}
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-center mb-8">Categorias</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        <section className="section">
+          <div className="container-wide">
+            <div className="text-center mb-12">
+              <h2 className="text-display-sm text-gray-900">Categorias</h2>
+              <p className="mt-2 text-gray-500">Explora nuestro catalogo</p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {categories.map((cat) => (
-                <Link
-                  key={cat.slug}
-                  href={`/tienda?categoria=${cat.slug}`}
-                  className="group text-center p-6 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="w-14 h-14 mx-auto bg-blue-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-100 transition-all">
-                    <cat.Icon size={28} className="text-blue-600" strokeWidth={1.5} />
+                <Link key={cat.slug} href={`/tienda?categoria=${cat.slug}`}
+                  className="group flex flex-col items-center p-5 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-elevated transition-all duration-200">
+                  <div className="w-12 h-12 bg-gray-50 group-hover:bg-brand-50 rounded-xl flex items-center justify-center transition-colors">
+                    <cat.Icon size={22} className="text-gray-600 group-hover:text-brand-600 transition-colors" strokeWidth={1.5} />
                   </div>
-                  <h3 className="mt-3 font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{cat.name}</h3>
-                  <p className="text-sm text-gray-500">{cat.description}</p>
+                  <h3 className="mt-3 text-sm font-medium text-gray-900 text-center">{cat.name}</h3>
                 </Link>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Featured */}
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-center mb-8">Destacados</h2>
-            {featuredProducts.length > 0 ? (
+        {/* Featured Products */}
+        <section className="section bg-gray-50/50">
+          <div className="container-wide">
+            <div className="flex items-end justify-between mb-10">
+              <div>
+                <h2 className="text-display-sm text-gray-900">Destacados</h2>
+                <p className="mt-2 text-gray-500">Los mas elegidos por nuestros clientes</p>
+              </div>
+              <Link href="/tienda" className="hidden md:flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                Ver todo <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {products.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                {featuredProducts.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/producto/${product.slug}`}
-                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all"
-                  >
-                    <div className="aspect-square bg-gray-100">
-                      {product.image ? (
-                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package size={32} className="text-gray-300" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 line-clamp-1">{product.name}</h3>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {(() => {
-                          const mainPrice = Number(product.price) || 0;
-                          const comparePrice = product.compareAtPrice ? Number(product.compareAtPrice) : null;
-                          const hasVariantDiscount = comparePrice && comparePrice > mainPrice;
-                          const hasDesc = product.priceConfig?.enabledTypes?.includes('descuento') && product.priceConfig?.descuento != null && product.priceConfig.descuento > 0;
-                          const hasEsp = product.priceConfig?.enabledTypes?.includes('especial') && product.priceConfig?.especial != null;
-                          const finalPrice = hasEsp ? Number(product.priceConfig.especial) : hasDesc ? Math.round(mainPrice * (1 - product.priceConfig.descuento / 100) * 100) / 100 : mainPrice;
-                          const showStrike = hasVariantDiscount || ((hasDesc || hasEsp) && finalPrice < mainPrice);
-                          const strikePrice = hasVariantDiscount ? comparePrice : mainPrice;
-                          const discountPercent = hasVariantDiscount ? Math.round((1 - mainPrice / comparePrice) * 100) : hasDesc ? product.priceConfig.descuento : 0;
-                          return (
-                            <>
-                              {showStrike && <span className="text-xs text-gray-400 line-through">S/ {strikePrice}</span>}
-                              <span className="font-bold text-sm text-pink-600">S/ {finalPrice}</span>
-                              {discountPercent > 0 && <span className="text-[10px] px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-full font-medium">-{discountPercent}%</span>}
-                            </>
-                          );
-                        })()}
-                      </div>
-                      {product.stock <= 5 && product.stock > 0 && (
-                        <span className="text-[10px] text-orange-500 font-medium mt-1 block">Ultimas unidades</span>
-                      )}
-                    </div>
-                  </Link>
+                {products.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    id={p.id}
+                    name={p.name}
+                    slug={p.slug}
+                    price={p.price}
+                    compareAtPrice={p.compareAtPrice}
+                    finalPrice={p.finalPrice}
+                    discountPercent={p.discountPercent}
+                    image={p.images?.[0]}
+                    category={p.category?.name}
+                    stock={p.stock}
+                  />
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <Package size={48} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">Cargando productos...</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-3">
+                    <div className="skeleton aspect-square rounded-2xl" />
+                    <div className="skeleton h-3 w-1/3 rounded" />
+                    <div className="skeleton h-4 w-2/3 rounded" />
+                    <div className="skeleton h-4 w-1/4 rounded" />
+                  </div>
+                ))}
               </div>
             )}
+
+            <Link href="/tienda" className="md:hidden flex items-center justify-center gap-1 mt-8 text-sm font-medium text-gray-600 hover:text-gray-900">
+              Ver todos los productos <ArrowRight size={14} />
+            </Link>
           </div>
         </section>
 
-        {/* Why Us */}
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        {/* Trust Badges */}
+        <section className="section">
+          <div className="container-wide">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {trustBadges.map((badge) => (
-                <div key={badge.title}>
-                  <div className="w-16 h-16 mx-auto bg-pink-50 rounded-2xl flex items-center justify-center mb-3">
-                    <badge.Icon size={28} className="text-blue-600" strokeWidth={1.5} />
+                <div key={badge.title} className="text-center">
+                  <div className="w-12 h-12 mx-auto bg-gray-50 rounded-xl flex items-center justify-center mb-3">
+                    <badge.Icon size={20} className="text-gray-600" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-semibold">{badge.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{badge.desc}</p>
+                  <h3 className="text-sm font-semibold text-gray-900">{badge.title}</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">{badge.desc}</p>
                 </div>
               ))}
             </div>

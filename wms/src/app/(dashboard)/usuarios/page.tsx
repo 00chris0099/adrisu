@@ -218,28 +218,28 @@ function UserModal({ user, onClose, onSaved }: { user: any; onClose: () => void;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-xl font-bold mb-4">{user ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
+      <div className="bg-gray-900 dark:bg-gray-900 border border-gray-800 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 className="text-xl font-bold mb-4 text-white dark:text-white">{user ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Nombre completo</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Nombre completo</label>
             <input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Email</label>
             <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{user ? 'Nueva contraseña (opcional)' : 'Contraseña'}</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">{user ? 'Nueva contraseña (opcional)' : 'Contraseña'}</label>
             <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Rol</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Rol</label>
             <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2">
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30">
               <option value="super_admin">Super Admin</option>
               <option value="admin">Admin</option>
               <option value="warehouse_manager">Gerente de Almacen</option>
@@ -250,15 +250,15 @@ function UserModal({ user, onClose, onSaved }: { user: any; onClose: () => void;
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Telefono</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Telefono</label>
             <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-sm">Cancelar</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm">
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
         </div>

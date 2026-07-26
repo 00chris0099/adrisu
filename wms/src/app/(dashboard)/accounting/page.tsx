@@ -19,10 +19,10 @@ interface Invoice {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-700',
-  issued: 'bg-green-100 text-green-700',
-  paid: 'bg-blue-100 text-blue-700',
-  cancelled: 'bg-red-100 text-red-700',
+  draft: 'bg-gray-800 text-gray-300',
+  issued: 'bg-green-500/20 text-green-400',
+  paid: 'bg-blue-500/20 text-blue-400',
+  cancelled: 'bg-red-500/20 text-red-400',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -114,11 +114,11 @@ export default function AccountingPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Facturacion</h1>
-          <p className="text-gray-500">Gestion de facturas, boletas y notas</p>
+          <p className="text-gray-400">Gestion de facturas, boletas y notas</p>
         </div>
         <button
           onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-xl hover:bg-brand-700"
         >
           <Plus size={18} />
           Nuevo Comprobante
@@ -127,16 +127,16 @@ export default function AccountingPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Total Comprobantes</div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="text-sm text-gray-400">Total Comprobantes</div>
           <div className="text-2xl font-bold">{stats.total}</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Pendientes</div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="text-sm text-gray-400">Pendientes</div>
           <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Pagadas</div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="text-sm text-gray-400">Pagadas</div>
           <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
         </div>
       </div>
@@ -146,7 +146,7 @@ export default function AccountingPage() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="border rounded-lg px-3 py-2"
+          className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white"
         >
           <option value="">Todos los estados</option>
           <option value="draft">Borrador</option>
@@ -157,7 +157,7 @@ export default function AccountingPage() {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="border rounded-lg px-3 py-2"
+          className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white"
         >
           <option value="">Todos los tipos</option>
           <option value="FACTURA">Factura</option>
@@ -168,31 +168,31 @@ export default function AccountingPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-800">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Numero</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Tipo</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Cliente</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Estado</th>
-              <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Total</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Fecha</th>
-              <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">Acciones</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Numero</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Tipo</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Cliente</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Estado</th>
+              <th className="px-4 py-3 text-right text-sm font-medium text-gray-400">Total</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Fecha</th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-gray-400">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-800">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">Cargando...</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-gray-400">Cargando...</td>
               </tr>
             ) : invoices.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">No hay comprobantes</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-gray-400">No hay comprobantes</td>
               </tr>
             ) : (
               invoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-gray-50">
+                <tr key={invoice.id} className="hover:bg-gray-800/50">
                   <td className="px-4 py-3 font-mono text-sm">{invoice.invoiceNumber}</td>
                   <td className="px-4 py-3 text-sm">{invoice.documentType}</td>
                   <td className="px-4 py-3 text-sm">{invoice.customerName}</td>
@@ -202,7 +202,7 @@ export default function AccountingPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right font-medium">S/ {invoice.total.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-gray-400">
                     {new Date(invoice.createdAt).toLocaleDateString('es-PE')}
                   </td>
                   <td className="px-4 py-3">
@@ -210,7 +210,7 @@ export default function AccountingPage() {
                       {invoice.status === 'draft' && (
                         <button
                           onClick={() => handleSend(invoice)}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded"
+                          className="p-1 text-green-400 hover:bg-green-500/10 rounded"
                           title="Enviar a Nubefact"
                         >
                           <Send size={16} />
@@ -218,7 +218,7 @@ export default function AccountingPage() {
                       )}
                       <button
                         onClick={() => handleViewPdf(invoice)}
-                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                        className="p-1 text-blue-400 hover:bg-blue-500/10 rounded"
                         title="Ver PDF"
                       >
                         <Eye size={16} />
@@ -226,7 +226,7 @@ export default function AccountingPage() {
                       {invoice.status === 'draft' && (
                         <button
                           onClick={() => handleDelete(invoice)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          className="p-1 text-red-400 hover:bg-red-500/10 rounded"
                           title="Eliminar"
                         >
                           <Trash2 size={16} />
@@ -318,27 +318,27 @@ function NewInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-        <h2 className="text-xl font-bold mb-4">Nuevo Comprobante</h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+        <h2 className="text-xl font-bold mb-4 text-white">Nuevo Comprobante</h2>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Tipo de Documento</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300">Tipo de Documento</label>
             <select
               value={documentType}
               onChange={(e) => setDocumentType(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full bg-gray-800 border-gray-700 text-white rounded-lg px-3 py-2"
             >
               <option value="FACTURA">Factura Electronica</option>
               <option value="BOLETA">Boleta de Venta</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Cliente</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300">Cliente</label>
             <select
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full bg-gray-800 border-gray-700 text-white rounded-lg px-3 py-2"
             >
               <option value="">Cliente variado</option>
               {customers.map((c) => (
@@ -351,8 +351,8 @@ function NewInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
         {/* Items */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="font-medium">Items</label>
-            <button onClick={addItem} className="text-blue-600 text-sm hover:underline">+ Agregar item</button>
+            <label className="font-medium text-gray-300">Items</label>
+            <button onClick={addItem} className="text-blue-400 text-sm hover:underline">+ Agregar item</button>
           </div>
           <div className="space-y-2">
             {items.map((item, index) => (
@@ -361,32 +361,32 @@ function NewInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
                   placeholder="Descripcion"
                   value={item.description}
                   onChange={(e) => updateItem(index, 'description', e.target.value)}
-                  className="flex-1 border rounded px-2 py-1 text-sm"
+                  className="flex-1 bg-gray-800 border-gray-700 text-white rounded px-2 py-1 text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Cant."
                   value={item.quantity}
                   onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                  className="w-16 border rounded px-2 py-1 text-sm"
+                  className="w-16 bg-gray-800 border-gray-700 text-white rounded px-2 py-1 text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Precio"
                   value={item.unitPrice}
                   onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                  className="w-24 border rounded px-2 py-1 text-sm"
+                  className="w-24 bg-gray-800 border-gray-700 text-white rounded px-2 py-1 text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Desc."
                   value={item.discount}
                   onChange={(e) => updateItem(index, 'discount', parseFloat(e.target.value) || 0)}
-                  className="w-20 border rounded px-2 py-1 text-sm"
+                  className="w-20 bg-gray-800 border-gray-700 text-white rounded px-2 py-1 text-sm"
                 />
-                <span className="w-24 text-right text-sm font-medium">S/ {(item.unitPrice * item.quantity - item.discount).toFixed(2)}</span>
+                <span className="w-24 text-right text-sm font-medium text-gray-300">S/ {(item.unitPrice * item.quantity - item.discount).toFixed(2)}</span>
                 {items.length > 1 && (
-                  <button onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700 text-sm">X</button>
+                  <button onClick={() => removeItem(index)} className="text-red-400 hover:text-red-300 text-sm">X</button>
                 )}
               </div>
             ))}
@@ -394,23 +394,23 @@ function NewInvoiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
         </div>
 
         {/* Totals */}
-        <div className="border-t pt-4 mb-4">
+        <div className="border-t border-gray-800 pt-4 mb-4">
           <div className="flex justify-end space-y-1">
             <div className="w-48">
-              <div className="flex justify-between text-sm"><span>Subtotal:</span><span>S/ {subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-sm"><span>IGV (18%):</span><span>S/ {igv.toFixed(2)}</span></div>
-              <div className="flex justify-between font-bold text-lg border-t pt-1"><span>Total:</span><span>S/ {total.toFixed(2)}</span></div>
+              <div className="flex justify-between text-sm text-gray-300"><span>Subtotal:</span><span>S/ {subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-sm text-gray-300"><span>IGV (18%):</span><span>S/ {igv.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold text-lg border-t border-gray-800 pt-1 text-gray-300"><span>Total:</span><span>S/ {total.toFixed(2)}</span></div>
             </div>
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-700 text-gray-300 rounded-xl hover:bg-gray-800">Cancelar</button>
           <button
             onClick={handleSave}
             disabled={saving || items.length === 0}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50"
           >
             {saving ? 'Guardando...' : 'Guardar Borrador'}
           </button>

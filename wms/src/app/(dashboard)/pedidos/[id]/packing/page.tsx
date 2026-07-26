@@ -276,41 +276,41 @@ function GuiaRemisionModal({ order, onClose }: { order: any; onClose: () => void
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-        <h2 className="text-xl font-bold mb-4">Guia de Remision</h2>
+      <div className="bg-gray-900 dark:bg-gray-900 border border-gray-800 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6">
+        <h2 className="text-xl font-bold mb-4 text-white dark:text-white">Guia de Remision</h2>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Transportista</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Transportista</label>
               <input value={form.carrier} onChange={(e) => setForm({ ...form, carrier: e.target.value })}
                 placeholder="Nombre del transportista"
-                className="w-full border rounded-lg px-3 py-2" />
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">RUC Transportista</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">RUC Transportista</label>
               <input value={form.carrierRuc} onChange={(e) => setForm({ ...form, carrierRuc: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2" />
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Placa Vehiculo</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Placa Vehiculo</label>
             <input value={form.plateNumber} onChange={(e) => setForm({ ...form, plateNumber: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Direccion Partida</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Direccion Partida</label>
             <input value={form.originAddress} onChange={(e) => setForm({ ...form, originAddress: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Direccion Llegada</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Direccion Llegada</label>
             <input value={form.destAddress} onChange={(e) => setForm({ ...form, destAddress: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Motivo</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Motivo</label>
             <select value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2">
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30">
               <option value="Venta">Venta</option>
               <option value="Venta sujeta a devolucion">Venta sujeta a devolucion</option>
               <option value="Consignacion">Consignacion</option>
@@ -319,9 +319,9 @@ function GuiaRemisionModal({ order, onClose }: { order: any; onClose: () => void
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-sm">Cancelar</button>
           <button onClick={handleGenerate} disabled={generating || !form.carrier}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm">
             {generating ? 'Generando...' : 'Generar Guia'}
           </button>
         </div>

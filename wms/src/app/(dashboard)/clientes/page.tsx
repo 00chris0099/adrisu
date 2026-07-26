@@ -17,11 +17,6 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
-      <div>
-        <h2 className="text-xl font-bold text-white">Clientes</h2>
-        <p className="text-sm text-gray-400">CRM y notificaciones</p>
-      </div>
-
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         {tabs.map((tab) => (
           <button

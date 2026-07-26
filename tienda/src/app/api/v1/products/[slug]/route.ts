@@ -1,11 +1,29 @@
 import { NextRequest } from 'next/server';
+import { getProductBySlug } from '@/lib/woocommerce-server';
 
 const WMS_URL = process.env.WMS_INTERNAL_URL || process.env.NEXT_PUBLIC_WMS_URL || 'https://tiendavirtual-adrisuestesiwms.jpq6em.easypanel.host';
+const WOO_CONFIGURED = !!(process.env.WC_CONSUMER_KEY && process.env.WC_CONSUMER_SECRET && process.env.NEXT_PUBLIC_WORDPRESS_URL);
 
 interface Props { params: { slug: string } }
 
 export async function GET(_request: NextRequest, { params }: Props) {
   try {
+    // ============================================================
+    // WooCommerce path
+    // ============================================================
+    if (WOO_CONFIGURED) {
+      const product = await getProductBySlug(params.slug);
+
+      if (!product || product.status !== 'publish') {
+        return Response.json({ error: 'Product not found' }, { status: 404 });
+      }
+
+      return Response.json({ data: product });
+    }
+
+    // ============================================================
+    // Fallback: legacy WMS backend
+    // ============================================================
     const res = await fetch(`${WMS_URL}/api/v1/products/${params.slug}`, {
       next: { revalidate: 60 },
     });
@@ -25,7 +43,7 @@ export async function GET(_request: NextRequest, { params }: Props) {
     const discount = p.discountPercent ? Number(p.discountPercent) : 0;
     const finalPrice = discount > 0 ? Math.round(basePrice * (1 - discount / 100) * 100) / 100 : basePrice;
 
-    const product = {
+    const productLegacy = {
       id: p.id,
       sku: p.sku,
       name: p.name,
@@ -60,9 +78,9 @@ export async function GET(_request: NextRequest, { params }: Props) {
       updatedAt: p.updatedAt,
     };
 
-    return Response.json({ data: product });
+    return Response.json({ data: productLegacy });
   } catch (error) {
-    console.error('[Tienda Product Detail] Error fetching from WMS:', error);
+    console.error('[Tienda Product Detail] Error:', error);
     return Response.json({ error: 'Product not found' }, { status: 404 });
   }
 }

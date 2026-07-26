@@ -218,40 +218,40 @@ function BroadcastModal({ onClose, onSent }: { onClose: () => void; onSent: () =
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-        <h2 className="text-xl font-bold mb-4">Nueva Campana WhatsApp</h2>
+      <div className="bg-gray-900 dark:bg-gray-900 border border-gray-800 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6">
+        <h2 className="text-xl font-bold mb-4 text-white dark:text-white">Nueva Campana WhatsApp</h2>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Asunto</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Asunto</label>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="Ej: Oferta de Navidad"
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Mensaje</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Mensaje</label>
             <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
               placeholder="Hola {nombre}, tenemos una oferta especial para ti..."
-              className="w-full border rounded-lg px-3 py-2" rows={4} />
-            <p className="text-xs text-gray-500 mt-1">Variables: {'{nombre}'}, {'{ultimo_pedido}'}</p>
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" rows={4} />
+            <p className="text-xs text-gray-400 dark:text-gray-400 mt-1">Variables: {'{nombre}'}, {'{ultimo_pedido}'}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Destinatarios</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Destinatarios</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2">
                 <input type="radio" checked={form.targetAll} onChange={() => setForm({ ...form, targetAll: true })} />
-                <span className="text-sm">Todos los clientes ({customers.length})</span>
+                <span className="text-sm text-gray-300 dark:text-gray-300">Todos los clientes ({customers.length})</span>
               </label>
               <label className="flex items-center gap-2">
                 <input type="radio" checked={!form.targetAll} onChange={() => setForm({ ...form, targetAll: false })} />
-                <span className="text-sm">Seleccionar</span>
+                <span className="text-sm text-gray-300 dark:text-gray-300">Seleccionar</span>
               </label>
             </div>
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-sm">Cancelar</button>
           <button onClick={handleSend} disabled={sending || !form.title || !form.message}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50">
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm">
             {sending ? 'Enviando...' : 'Enviar Campana'}
           </button>
         </div>
@@ -288,32 +288,32 @@ function PushModal({ onClose, onSent }: { onClose: () => void; onSent: () => voi
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-xl font-bold mb-4">Nueva Notificacion Push</h2>
+      <div className="bg-gray-900 dark:bg-gray-900 border border-gray-800 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 className="text-xl font-bold mb-4 text-white dark:text-white">Nueva Notificacion Push</h2>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Titulo</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Titulo</label>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="Ej: Nuevo pedido recibido"
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Mensaje</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Mensaje</label>
             <textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })}
               placeholder="Detalle de la notificacion..."
-              className="w-full border rounded-lg px-3 py-2" rows={3} />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" rows={3} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">URL (opcional)</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">URL (opcional)</label>
             <input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })}
               placeholder="/pedidos"
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-sm">Cancelar</button>
           <button onClick={handleSend} disabled={sending || !form.title || !form.body}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm">
             {sending ? 'Enviando...' : 'Enviar Notificacion'}
           </button>
         </div>

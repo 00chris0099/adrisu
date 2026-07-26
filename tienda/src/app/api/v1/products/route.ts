@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server';
+import { getProducts, resolveCategoryId } from '@/lib/woocommerce-server';
 
 export const dynamic = 'force-dynamic';
 
 const WMS_URL = process.env.WMS_INTERNAL_URL || process.env.NEXT_PUBLIC_WMS_URL || 'https://tiendavirtual-adrisuestesiwms.jpq6em.easypanel.host';
+const WOO_CONFIGURED = !!(process.env.WC_CONSUMER_KEY && process.env.WC_CONSUMER_SECRET && process.env.NEXT_PUBLIC_WORDPRESS_URL);
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,6 +13,32 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || '';
     const limit = searchParams.get('limit') || '50';
 
+    // ============================================================
+    // WooCommerce path (when configured)
+    // ============================================================
+    if (WOO_CONFIGURED) {
+      let categoryId: string | undefined;
+      if (category) {
+        const resolved = await resolveCategoryId(category);
+        if (resolved) categoryId = resolved;
+      }
+
+      const result = await getProducts({
+        search: search || undefined,
+        category: categoryId,
+        perPage: parseInt(limit, 10),
+        status: 'publish',
+      });
+
+      return Response.json({
+        data: result.products,
+        total: result.total,
+      });
+    }
+
+    // ============================================================
+    // Fallback: legacy WMS backend
+    // ============================================================
     const params = new URLSearchParams({ limit });
     if (search) params.set('q', search);
     if (category) params.set('category', category);
@@ -72,7 +100,7 @@ export async function GET(request: NextRequest) {
       total: activeProducts.length,
     });
   } catch (error) {
-    console.error('[Tienda Products] Error fetching from WMS:', error);
+    console.error('[Tienda Products] Error:', error);
     return Response.json({ data: [], total: 0 }, { status: 200 });
   }
 }

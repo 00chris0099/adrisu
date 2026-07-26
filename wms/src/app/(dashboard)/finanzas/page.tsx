@@ -68,11 +68,6 @@ export default function FinanzasPage() {
 
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
-      <div>
-        <h2 className="text-xl font-bold text-white">Finanzas</h2>
-        <p className="text-sm text-gray-400">Resumen financiero</p>
-      </div>
-
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         {tabs.map((tab) => (
           <button

@@ -155,61 +155,61 @@ function ShipmentModal({ shipment, onClose, onSaved }: { shipment: any; onClose:
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-        <h2 className="text-xl font-bold mb-4">{isDetail ? `Envio ${shipment.shipmentNumber}` : 'Nuevo Envio'}</h2>
+      <div className="bg-gray-900 dark:bg-gray-900 border border-gray-800 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6">
+        <h2 className="text-xl font-bold mb-4 text-white dark:text-white">{isDetail ? `Envio ${shipment.shipmentNumber}` : 'Nuevo Envio'}</h2>
         <div className="grid grid-cols-2 gap-3">
           {!isDetail && (
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1">ID de Pedido</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">ID de Pedido</label>
               <input value={form.orderId} onChange={(e) => setForm({ ...form, orderId: e.target.value })}
                 placeholder="Dejar vacio si no hay pedido asociado"
-                className="w-full border rounded-lg px-3 py-2" />
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium mb-1">Transportista</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Transportista</label>
             <input value={form.carrier} onChange={(e) => setForm({ ...form, carrier: e.target.value })}
               placeholder="Ej: Serpost, EnvioTodo"
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Nro. Guia / Tracking</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Nro. Guia / Tracking</label>
             <input value={form.trackingNumber} onChange={(e) => setForm({ ...form, trackingNumber: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div className="col-span-2">
-            <label className="block text-sm font-medium mb-1">Direccion destino</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Direccion destino</label>
             <input value={form.destAddress} onChange={(e) => setForm({ ...form, destAddress: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Distrito</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Distrito</label>
             <input value={form.destDistrict} onChange={(e) => setForm({ ...form, destDistrict: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Ciudad</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Ciudad</label>
             <input value={form.destCity} onChange={(e) => setForm({ ...form, destCity: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Peso (kg)</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Peso (kg)</label>
             <input type="number" value={form.weight} onChange={(e) => setForm({ ...form, weight: parseFloat(e.target.value) || 0 })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div className="col-span-2">
-            <label className="block text-sm font-medium mb-1">Notas</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Notas</label>
             <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" rows={2} />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" rows={2} />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-50">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-sm">
             {isDetail ? 'Cerrar' : 'Cancelar'}
           </button>
           {!isDetail && (
             <button onClick={handleSave} disabled={saving}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm">
               {saving ? 'Guardando...' : 'Crear Envio'}
             </button>
           )}

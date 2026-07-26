@@ -165,64 +165,64 @@ function BlogPostModal({ post, onClose, onSaved }: { post: any; onClose: () => v
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-        <h2 className="text-xl font-bold mb-4">{post ? 'Editar Articulo' : 'Nuevo Articulo'}</h2>
+      <div className="bg-gray-900 dark:bg-gray-900 border border-gray-800 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+        <h2 className="text-xl font-bold mb-4 text-white dark:text-white">{post ? 'Editar Articulo' : 'Nuevo Articulo'}</h2>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Titulo *</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Titulo *</label>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Contenido *</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Contenido *</label>
             <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" rows={10} />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" rows={10} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Extracto</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Extracto</label>
             <textarea value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" rows={2} />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" rows={2} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Categoria</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Categoria</label>
               <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
                 placeholder="Ej: Consejos, Noticias"
-                className="w-full border rounded-lg px-3 py-2" />
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Tags (separados por coma)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Tags (separados por coma)</label>
               <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
                 placeholder="bebe, muebles, seguridad"
-                className="w-full border rounded-lg px-3 py-2" />
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Imagen de portada (URL)</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Imagen de portada (URL)</label>
             <input value={form.coverImage} onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2" />
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Meta Title (SEO)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Meta Title (SEO)</label>
               <input value={form.metaTitle} onChange={(e) => setForm({ ...form, metaTitle: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2" />
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Meta Description (SEO)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300 dark:text-gray-300">Meta Description (SEO)</label>
               <input value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2" />
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-800 dark:bg-gray-800 border-gray-700 dark:border-gray-700 text-white dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
             </div>
           </div>
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} />
-            <span className="text-sm">Publicar inmediatamente</span>
+            <span className="text-sm text-gray-300 dark:text-gray-300">Publicar inmediatamente</span>
           </label>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-sm">Cancelar</button>
           <button onClick={handleSave} disabled={saving || !form.title || !form.content}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm">
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
         </div>

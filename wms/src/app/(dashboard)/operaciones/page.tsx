@@ -15,11 +15,6 @@ export default function OperacionesPage() {
 
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
-      <div>
-        <h2 className="text-xl font-bold text-white">Operaciones</h2>
-        <p className="text-sm text-gray-400">Gestion de pedidos</p>
-      </div>
-
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         {tabs.map((tab) => (
           <button

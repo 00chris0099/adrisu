@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import {
   LayoutDashboard, Package, ShoppingCart, Users, Warehouse,
   Truck, BarChart3, Shield, Settings, Menu, X, ChevronRight,
@@ -179,6 +180,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <h1 className="text-base font-semibold text-white">{currentLabel}</h1>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <NotificationBell />
             {/* Desktop: collapse toggle */}
             <button
