@@ -42,6 +42,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         ...(body.stock !== undefined && { stock: body.stock }),
         ...(body.discountPercent !== undefined && { discountPercent: body.discountPercent }),
         ...(body.barcode !== undefined && { barcode: body.barcode }),
+        ...(body.discountPopup !== undefined && { discountPopup: body.discountPopup }),
         ...(body.promotionBar !== undefined && { promotionBar: body.promotionBar }),
         ...(body.socialProof !== undefined && { socialProof: body.socialProof }),
       },

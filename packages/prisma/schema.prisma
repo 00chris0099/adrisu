@@ -220,6 +220,7 @@ model Product {
   lowStockAlert    Int?          @map("low_stock_alert")
 
   // Urgency / Promoción
+  discountPopup    Json?         @map("discount_popup")
   promotionBar     Json?         @map("promotion_bar") // {enabled, message, hours, bgColor, textColor}
   socialProof      Json?         @map("social_proof")   // {enabled, interval, messages[], avatars[]}
 

@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
       stock: p.stock,
       discountPercent: p.discountPercent ? Number(p.discountPercent) : null,
       barcode: p.barcode,
+      discountPopup: p.discountPopup || null,
       promotionBar: p.promotionBar || null,
       socialProof: p.socialProof || null,
       createdAt: p.createdAt,
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
       sku: requestedSku, name, model, description, shortDescription, categoryId, status, tags, images,
       height, width, depth, color, materials, recommendedAge, warrantyDays, originCountry,
       weight, weightUnit, lowStockAlert, price, compareAtPrice, costPrice, stock, discountPercent, barcode,
-      promotionBar, socialProof,
+      discountPopup, promotionBar, socialProof,
     } = body;
 
     const slug = name.toLowerCase()
@@ -151,6 +152,7 @@ export async function POST(request: NextRequest) {
         stock: stock || 0,
         discountPercent: discountPercent || null,
         barcode: barcode || null,
+        discountPopup: discountPopup || undefined,
         promotionBar: promotionBar || undefined,
         socialProof: socialProof || undefined,
       },

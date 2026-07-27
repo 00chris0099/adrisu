@@ -40,7 +40,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
       name, slug: newSlug, model, description, shortDescription, categoryId, status, tags, images, brand,
       height, width, depth, color, materials, recommendedAge, warrantyDays, originCountry,
       weight, weightUnit, lowStockAlert, price, compareAtPrice, costPrice, stock, discountPercent, barcode,
-      promotionBar, socialProof,
+      discountPopup, promotionBar, socialProof,
     } = body;
 
     const existing = await prisma.product.findUnique({ where: { id: params.id } });
@@ -80,6 +80,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         ...(stock !== undefined && { stock }),
         ...(discountPercent !== undefined && { discountPercent }),
         ...(barcode !== undefined && { barcode }),
+        ...(discountPopup !== undefined && { discountPopup }),
         ...(promotionBar !== undefined && { promotionBar }),
         ...(socialProof !== undefined && { socialProof }),
       },
