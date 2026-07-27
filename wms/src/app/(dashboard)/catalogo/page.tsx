@@ -191,7 +191,7 @@ export default function CatalogoPage() {
           '{name} de {city} acabó de comprar',
           '{name} de {city} se lo llevó',
         ],
-        avatarFiles: [],
+        avatars: [],
       },
       landingBlocks: landingBlocks,
     });

@@ -34,11 +34,18 @@ export interface PromotionBarConfig {
   textColor: string;
 }
 
+export interface SocialProofAvatar {
+  id: string;
+  imageUrl: string;
+  name: string;
+  city: string;
+}
+
 export interface SocialProofConfig {
   enabled: boolean;
-  interval: number; // seconds between toasts
-  messages: string[]; // templates: {name} de {city} compró {product}
-  avatarFiles: string[]; // filenames from /public/avatars/
+  interval: number;
+  messages: string[];
+  avatars: SocialProofAvatar[];
 }
 
 export interface ProductDimensions {
@@ -212,6 +219,9 @@ const defaultPromotionBar: PromotionBarConfig = {
   textColor: '#ffffff',
 };
 
+const MIGRATION_NAMES = ['María', 'Carlos', 'Ana', 'Luis', 'Rosa', 'Jorge', 'Claudia', 'Pedro', 'Sofía', 'Miguel', 'Elena', 'Fernando', 'Patricia', 'Roberto', 'Diana', 'Andrés', 'Carmen'];
+const MIGRATION_CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo', 'Ica', 'Huancayo', 'Lima', 'Cusco', 'Arequipa', 'Trujillo', 'Lima', 'Piura', 'Chiclayo', 'Ica', 'Huancayo'];
+
 const defaultSocialProof: SocialProofConfig = {
   enabled: false,
   interval: 5,
@@ -220,7 +230,25 @@ const defaultSocialProof: SocialProofConfig = {
     '{name} de {city} acabó de comprar',
     '{name} de {city} se lo llevó',
   ],
-  avatarFiles: [],
+  avatars: [
+    { id: '1', imageUrl: '/avatars/Abigail.jpg', name: 'Abigail', city: 'Lima' },
+    { id: '2', imageUrl: '/avatars/Alejandro.jpg', name: 'Alejandro', city: 'Arequipa' },
+    { id: '3', imageUrl: '/avatars/Benjamin.jpg', name: 'Benjamin', city: 'Cusco' },
+    { id: '4', imageUrl: '/avatars/Daniela.jpg', name: 'Daniela', city: 'Trujillo' },
+    { id: '5', imageUrl: '/avatars/Eric.jpg', name: 'Eric', city: 'Lima' },
+    { id: '6', imageUrl: '/avatars/jeremy.jpg', name: 'Jeremy', city: 'Piura' },
+    { id: '7', imageUrl: '/avatars/juan.jpg', name: 'Juan', city: 'Chiclayo' },
+    { id: '8', imageUrl: '/avatars/Liliana.jpg', name: 'Liliana', city: 'Ica' },
+    { id: '9', imageUrl: '/avatars/lucas.jpg', name: 'Lucas', city: 'Huancayo' },
+    { id: '10', imageUrl: '/avatars/martina.jpg', name: 'Martina', city: 'Lima' },
+    { id: '11', imageUrl: '/avatars/mateo.jpg', name: 'Mateo', city: 'Cusco' },
+    { id: '12', imageUrl: '/avatars/melina.jpg', name: 'Melina', city: 'Arequipa' },
+    { id: '13', imageUrl: '/avatars/santiago.jpg', name: 'Santiago', city: 'Lima' },
+    { id: '14', imageUrl: '/avatars/sofia.jpg', name: 'Sofía', city: 'Trujillo' },
+    { id: '15', imageUrl: '/avatars/thiago.jpg', name: 'Thiago', city: 'Piura' },
+    { id: '16', imageUrl: '/avatars/valentino.jpg', name: 'Valentino', city: 'Chiclayo' },
+    { id: '17', imageUrl: '/avatars/zoey.jpg', name: 'Zoey', city: 'Lima' },
+  ],
 };
 
 // ============================================================================
@@ -297,7 +325,26 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
 
     // Urgency / Promoción
     promotionBar: initialData?.promotionBar || defaultPromotionBar,
-    socialProof: initialData?.socialProof || defaultSocialProof,
+    socialProof: (() => {
+      const sp = initialData?.socialProof;
+      if (!sp) return defaultSocialProof;
+      if (sp.avatars) return sp;
+      const old = sp as any;
+      if (old.avatarFiles && Array.isArray(old.avatarFiles) && old.avatarFiles.length > 0) {
+        return {
+          enabled: sp.enabled,
+          interval: sp.interval,
+          messages: sp.messages,
+          avatars: old.avatarFiles.map((f: string, i: number) => ({
+            id: String(i + 1),
+            imageUrl: f.startsWith('/') ? f : `/avatars/${f}`,
+            name: MIGRATION_NAMES[i % MIGRATION_NAMES.length],
+            city: MIGRATION_CITIES[i % MIGRATION_CITIES.length],
+          })),
+        };
+      }
+      return { ...sp, avatars: defaultSocialProof.avatars };
+    })(),
 
     // UI state
     activeTab: initialData?.activeTab || 'info',

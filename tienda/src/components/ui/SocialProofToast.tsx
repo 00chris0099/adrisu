@@ -1,16 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-const NAMES = ['María', 'Carlos', 'Ana', 'Luis', 'Rosa', 'Jorge', 'Claudia', 'Pedro', 'Sofía', 'Miguel', 'Elena', 'Fernando', 'Patricia', 'Roberto', 'Diana', 'Andrés', 'Carmen', 'Juan', 'Laura', 'Ricardo'];
-const CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo', 'Ica', 'Huancayo', 'Cajamarca', 'Puno'];
 const TIME_OPTIONS = ['hace 2 min', 'hace 5 min', 'hace 8 min', 'hace 12 min', 'hace 18 min', 'hace 25 min'];
-const ALL_AVATARS = [
-  'Abigail.jpg', 'Alejandro.jpg', 'Benjamin.jpg', 'Daniela.jpg', 'Eric.jpg',
-  'jeremy.jpg', 'juan.jpg', 'Liliana.jpg', 'lucas.jpg',
-  'martina.jpg', 'mateo.jpg', 'melina.jpg', 'santiago.jpg', 'sofia.jpg',
-  'thiago.jpg', 'valentino.jpg', 'zoey.jpg',
-];
 const AVATAR_COLORS = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#6366f1'];
 
 function randomFrom<T>(arr: T[]): T {
@@ -23,11 +15,18 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 
+interface SocialProofAvatar {
+  id: string;
+  imageUrl: string;
+  name: string;
+  city: string;
+}
+
 interface SocialProofConfig {
   enabled: boolean;
   interval: number;
   messages: string[];
-  avatarFiles: string[];
+  avatars: SocialProofAvatar[];
 }
 
 interface SocialProofToastProps {
@@ -38,38 +37,36 @@ interface SocialProofToastProps {
 export default function SocialProofToast({ config, productName }: SocialProofToastProps) {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [person, setPerson] = useState({ name: '', city: '', avatar: '', message: '', time: '', useFallback: false });
+  const [current, setCurrent] = useState<{ avatar: SocialProofAvatar; message: string; time: string } | null>(null);
+  const msgIndexRef = useRef(0);
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!mounted || !config.enabled || !productName) return;
+    if (!mounted || !config.enabled || !productName || config.avatars.length === 0) return;
 
-    const avatars = config.avatarFiles.length > 0 ? config.avatarFiles : ALL_AVATARS;
-
-    const buildPerson = () => {
-      const name = randomFrom(NAMES);
-      const city = randomFrom(CITIES);
-      const avatar = `/avatars/${randomFrom(avatars)}`;
-      const msgTemplate = config.messages.length > 0
-        ? randomFrom(config.messages)
+    const buildNotification = () => {
+      const avatar = randomFrom(config.avatars);
+      const template = config.messages.length > 0
+        ? config.messages[msgIndexRef.current % config.messages.length]
         : '{name} de {city} compró este producto';
-      const message = msgTemplate
-        .replace('{name}', name)
-        .replace('{city}', city)
+      msgIndexRef.current++;
+      const message = template
+        .replace('{name}', avatar.name)
+        .replace('{city}', avatar.city)
         .replace('{product}', productName);
       const time = randomFrom(TIME_OPTIONS);
-      return { name, city, avatar, message, time, useFallback: false };
+      return { avatar, message, time };
     };
 
-    setPerson(buildPerson());
+    setCurrent(buildNotification());
 
     const interval = Math.max(config.interval || 5, 3) * 1000;
     const hideDuration = 4000;
     const extraPause = 1000;
 
     const showTimer = setInterval(() => {
-      setPerson(buildPerson());
+      setCurrent(buildNotification());
       setVisible(true);
       setTimeout(() => setVisible(false), hideDuration);
     }, interval + hideDuration + extraPause);
@@ -80,25 +77,36 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
     }, Math.max(interval, 5000));
 
     return () => { clearInterval(showTimer); clearTimeout(firstTimer); };
-  }, [mounted, config.enabled, config.interval, config.messages, config.avatarFiles, productName]);
+  }, [mounted, config.enabled, config.interval, config.messages, config.avatars, productName]);
 
-  if (!mounted || !config.enabled || !productName) return null;
+  if (!mounted || !config.enabled || !current || config.avatars.length === 0) return null;
 
-  const initial = person.name ? person.name.charAt(0) : '?';
-  const bgColor = AVATAR_COLORS[hashStr(person.name) % AVATAR_COLORS.length];
+  const { avatar, message, time } = current;
+  const initial = avatar.name ? avatar.name.charAt(0) : '?';
+  const bgColor = AVATAR_COLORS[hashStr(avatar.name) % AVATAR_COLORS.length];
 
   return (
     <div className={`fixed bottom-20 left-3 z-50 transition-all duration-500 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
       <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex items-center gap-3 max-w-xs">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ backgroundColor: bgColor }}>
-          {!person.useFallback ? (
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+          style={{ backgroundColor: bgColor }}
+        >
+          {avatar.imageUrl ? (
             <img
-              src={person.avatar}
-              alt={person.name}
+              src={avatar.imageUrl}
+              alt={avatar.name}
               className="w-full h-full object-cover"
               loading="lazy"
-              onError={() => {
-                setPerson(prev => ({ ...prev, useFallback: true }));
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                const parent = (e.target as HTMLImageElement).parentElement;
+                if (parent && !parent.querySelector('.fallback-initial')) {
+                  const span = document.createElement('span');
+                  span.className = 'fallback-initial text-white text-sm font-bold leading-none';
+                  span.textContent = initial;
+                  parent.appendChild(span);
+                }
               }}
             />
           ) : (
@@ -106,8 +114,8 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
           )}
         </div>
         <div className="min-w-0">
-          <p className="text-xs text-gray-700">{person.message}</p>
-          <p className="text-[10px] text-gray-400">{person.time}</p>
+          <p className="text-xs text-gray-700">{message}</p>
+          <p className="text-[10px] text-gray-400">{time}</p>
         </div>
       </div>
     </div>

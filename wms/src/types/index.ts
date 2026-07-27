@@ -99,11 +99,18 @@ export interface PromotionBarConfig {
   textColor: string;
 }
 
+export interface SocialProofAvatar {
+  id: string;
+  imageUrl: string;
+  name: string;
+  city: string;
+}
+
 export interface SocialProofConfig {
   enabled: boolean;
   interval: number;
   messages: string[];
-  avatarFiles: string[];
+  avatars: SocialProofAvatar[];
 }
 
 export interface Customer {
