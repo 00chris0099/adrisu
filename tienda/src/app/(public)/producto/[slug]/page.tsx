@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Package, ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -17,8 +17,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [landingBlocks, setLandingBlocks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [showFixedCta, setShowFixedCta] = useState(false);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const [ctaVisible, setCtaVisible] = useState(true);
+  const ctaMarkerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -76,18 +76,19 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     fetchProduct();
   }, [params.slug]);
 
-  // Detect when inline CTA scrolls out of view
+  // Track when inline CTA scrolls out of viewport
+  const handleScroll = useCallback(() => {
+    if (!ctaMarkerRef.current) return;
+    const rect = ctaMarkerRef.current.getBoundingClientRect();
+    const outOfView = rect.bottom < 0;
+    setCtaVisible(!outOfView);
+  }, []);
+
   useEffect(() => {
-    if (!ctaRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowFixedCta(!entry.isIntersecting);
-      },
-      { threshold: 0 }
-    );
-    observer.observe(ctaRef.current);
-    return () => observer.disconnect();
-  }, [product]);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   if (loading) {
     return (
@@ -215,8 +216,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               </div>
             )}
 
-            {/* CTA */}
-            <div ref={ctaRef}>
+            {/* CTA inline */}
+            <div ref={ctaMarkerRef}>
               <button onClick={() => setCheckoutOpen(true)} className="btn-brand w-full py-3.5 text-base">
                 {product.ctaText}
               </button>
@@ -310,13 +311,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
         <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} product={product} />
       )}
 
-      {/* Social Proof Toast - positioned above the fixed CTA */}
+      {/* Social Proof Toast - above fixed CTA */}
       {product.socialProof?.enabled && (
         <SocialProofToast config={product.socialProof} productName={product.name} />
       )}
 
-      {/* Mobile CTA - fixed bottom, only shows when inline CTA is out of view */}
-      {showFixedCta && (
+      {/* Mobile CTA - fixed bottom, hidden when inline CTA is visible */}
+      {!ctaVisible && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 p-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
