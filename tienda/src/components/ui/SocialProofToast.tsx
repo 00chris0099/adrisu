@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User } from 'lucide-react';
 
 const NAMES = ['María', 'Carlos', 'Ana', 'Luis', 'Rosa', 'Jorge', 'Claudia', 'Pedro', 'Sofía', 'Miguel', 'Elena', 'Fernando', 'Patricia', 'Roberto', 'Diana', 'Andrés', 'Carmen', 'Juan', 'Laura', 'Ricardo'];
 const CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo', 'Ica', 'Huancayo', 'Cajamarca', 'Puno'];
@@ -87,12 +86,12 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
             src={person.avatar}
             alt={person.name}
             className="w-full h-full object-cover"
+            loading="lazy"
             onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              (e.target as HTMLImageElement).src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23dbeafe"/><text x="16" y="21" font-family="sans-serif" font-size="14" font-weight="bold" fill="%232563eb" text-anchor="middle">${person.name.charAt(0)}</text></svg>`)}`;
+              (e.target as HTMLImageElement).onerror = null;
             }}
           />
-          <User size={14} className="text-blue-600 hidden" />
         </div>
         <div className="min-w-0">
           <p className="text-xs text-gray-700">{person.message}</p>
