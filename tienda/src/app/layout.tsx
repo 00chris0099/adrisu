@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import SessionProvider from '@/components/providers/SessionProvider';
-import ExitIntentPopup from '@/components/ui/ExitIntentPopup';
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_TIENDA_URL || 'https://tiendavirtual-tiendaadrisuk.jpq6em.easypanel.host'),
@@ -178,7 +178,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <SessionProvider>
           <ErrorBoundary>{children}</ErrorBoundary>
-          <ExitIntentPopup />
         </SessionProvider>
       </body>
     </html>

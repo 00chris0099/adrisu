@@ -331,6 +331,13 @@ function BlockEditor({
             placeholder="Texto del boton"
             className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
+          <input
+            type="text"
+            value={block.content.buttonUrl || ''}
+            onChange={(e) => onUpdateContent({ buttonUrl: e.target.value })}
+            placeholder="URL del boton (https://...)"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-500 mb-1">Color de fondo</label>
