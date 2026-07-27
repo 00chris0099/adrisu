@@ -74,6 +74,7 @@ export async function GET(_request: NextRequest, { params }: Props) {
       barcode: p.barcode,
       category: p.category ? { name: p.category.name, slug: p.category.slug } : null,
       categoryId: p.categoryId,
+      discountPopup: p.discountPopup || null,
       promotionBar: p.promotionBar || null,
       socialProof: p.socialProof || null,
       createdAt: p.createdAt,
