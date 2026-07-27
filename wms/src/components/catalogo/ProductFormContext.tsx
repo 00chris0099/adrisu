@@ -26,6 +26,21 @@ export interface DiscountPopupConfig {
   textColor: string;
 }
 
+export interface PromotionBarConfig {
+  enabled: boolean;
+  message: string;
+  hours: number; // horas de countdown
+  bgColor: string;
+  textColor: string;
+}
+
+export interface SocialProofConfig {
+  enabled: boolean;
+  interval: number; // seconds between toasts
+  messages: string[]; // templates: {name} de {city} compró {product}
+  avatarFiles: string[]; // filenames from /public/avatars/
+}
+
 export interface ProductDimensions {
   height: number | null;
   width: number | null;
@@ -80,6 +95,10 @@ interface ProductFormState {
   ctaText: string;
   crossSellProductIds: string[];
 
+  // Urgency / Promoción
+  promotionBar: PromotionBarConfig;
+  socialProof: SocialProofConfig;
+
   // UI state
   activeTab: string;
   activeView: 'edit' | 'preview';
@@ -129,6 +148,12 @@ interface ProductFormContextType extends ProductFormState {
   addCrossSellProduct: (id: string) => void;
   removeCrossSellProduct: (id: string) => void;
 
+  // Urgency / Promoción
+  updatePromotionBar: (config: Partial<PromotionBarConfig>) => void;
+  togglePromotionBar: () => void;
+  updateSocialProof: (config: Partial<SocialProofConfig>) => void;
+  toggleSocialProof: () => void;
+
   // UI
   setActiveTab: (tab: string) => void;
   setActiveView: (view: 'edit' | 'preview') => void;
@@ -177,6 +202,25 @@ const defaultDimensions: ProductDimensions = {
   height: null,
   width: null,
   depth: null,
+};
+
+const defaultPromotionBar: PromotionBarConfig = {
+  enabled: false,
+  message: '¡Oferta por tiempo limitado! Quedan {hours}h {minutes}m {seconds}s',
+  hours: 24,
+  bgColor: '#dc2626',
+  textColor: '#ffffff',
+};
+
+const defaultSocialProof: SocialProofConfig = {
+  enabled: false,
+  interval: 5,
+  messages: [
+    '{name} de {city} compró este producto',
+    '{name} de {city} acabó de comprar',
+    '{name} de {city} se lo llevó',
+  ],
+  avatarFiles: [],
 };
 
 // ============================================================================
@@ -250,6 +294,10 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
     // CTA & Cross-sell
     ctaText: initialData?.ctaText || '¡Lo quiero ahora!',
     crossSellProductIds: initialData?.crossSellProductIds || [],
+
+    // Urgency / Promoción
+    promotionBar: initialData?.promotionBar || defaultPromotionBar,
+    socialProof: initialData?.socialProof || defaultSocialProof,
 
     // UI state
     activeTab: initialData?.activeTab || 'info',
@@ -471,6 +519,46 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
   }, []);
 
   // ============================================================================
+  // URGENCY / PROMOTION BAR
+  // ============================================================================
+
+  const updatePromotionBar = useCallback((config: Partial<PromotionBarConfig>) => {
+    setState(prev => ({
+      ...prev,
+      promotionBar: { ...prev.promotionBar, ...config },
+      isDirty: true,
+    }));
+  }, []);
+
+  const togglePromotionBar = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      promotionBar: { ...prev.promotionBar, enabled: !prev.promotionBar.enabled },
+      isDirty: true,
+    }));
+  }, []);
+
+  // ============================================================================
+  // SOCIAL PROOF
+  // ============================================================================
+
+  const updateSocialProof = useCallback((config: Partial<SocialProofConfig>) => {
+    setState(prev => ({
+      ...prev,
+      socialProof: { ...prev.socialProof, ...config },
+      isDirty: true,
+    }));
+  }, []);
+
+  const toggleSocialProof = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      socialProof: { ...prev.socialProof, enabled: !prev.socialProof.enabled },
+      isDirty: true,
+    }));
+  }, []);
+
+  // ============================================================================
   // UI
   // ============================================================================
 
@@ -568,6 +656,8 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
             costPrice: state.costPrice,
             barcode: state.barcode,
             discountPopup: state.discountPopup,
+            promotionBar: state.promotionBar,
+            socialProof: state.socialProof,
             landingBlocks: state.landingBlocks,
             ctaText: state.ctaText,
             crossSellProductIds: state.crossSellProductIds,
@@ -675,6 +765,10 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
     setCrossSellProductIds,
     addCrossSellProduct,
     removeCrossSellProduct,
+    updatePromotionBar,
+    togglePromotionBar,
+    updateSocialProof,
+    toggleSocialProof,
     setLandingBlocks,
     addLandingBlock,
     updateLandingBlock,

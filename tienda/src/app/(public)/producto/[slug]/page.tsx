@@ -8,6 +8,8 @@ import Navbar from '@/components/layout/Navbar';
 
 const CheckoutModal = dynamic(() => import('@/components/checkout/CheckoutModal'), { ssr: false });
 const LandingPageRenderer = dynamic(() => import('@/components/landing/LandingPageRenderer'), { ssr: false });
+const PromotionBar = dynamic(() => import('@/components/shop/PromotionBar'), { ssr: false });
+const SocialProofToast = dynamic(() => import('@/components/ui/SocialProofToast'), { ssr: false });
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -53,6 +55,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               weightUnit: p.weightUnit || 'kg',
               tags: p.tags || [],
               discountPopup: p.discountPopup || null,
+              promotionBar: p.promotionBar || null,
+              socialProof: p.socialProof || null,
             });
 
             try {
@@ -98,6 +102,11 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Promotion Bar */}
+      {product.promotionBar?.enabled && (
+        <PromotionBar config={product.promotionBar} />
+      )}
+
       <Navbar />
 
       <main className="flex-1 container-wide py-4 md:py-8">
@@ -278,6 +287,11 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       {/* Checkout Modal */}
       {checkoutOpen && (
         <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} product={product} />
+      )}
+
+      {/* Social Proof Toast */}
+      {product.socialProof?.enabled && (
+        <SocialProofToast config={product.socialProof} productName={product.name} />
       )}
     </div>
   );

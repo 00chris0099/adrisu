@@ -219,6 +219,10 @@ model Product {
   // Stock
   lowStockAlert    Int?          @map("low_stock_alert")
 
+  // Urgency / Promoción
+  promotionBar     Json?         @map("promotion_bar") // {enabled, message, hours, bgColor, textColor}
+  socialProof      Json?         @map("social_proof")   // {enabled, interval, messages[], avatars[]}
+
   // Precio y stock
   price            Decimal       @default(0) @db.Decimal(10, 2)
   compareAtPrice   Decimal?      @map("compare_at_price") @db.Decimal(10, 2)

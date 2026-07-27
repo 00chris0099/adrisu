@@ -224,6 +224,10 @@ model Product {
   // Stock
   lowStockAlert    Int?          @map("low_stock_alert")
 
+  // Urgency / Promoción
+  promotionBar     Json?         @map("promotion_bar") // {enabled, message, hours, bgColor, textColor}
+  socialProof      Json?         @map("social_proof")   // {enabled, interval, messages[], avatars[]}
+
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
   publishedAt      DateTime?     @map("published_at")

@@ -81,6 +81,8 @@ export default function CatalogoPage() {
       costPrice: data.costPrice,
       barcode: data.barcode,
       discountPopup: data.discountPopup,
+      promotionBar: data.promotionBar,
+      socialProof: data.socialProof,
       ctaText: data.ctaText,
       crossSellProductIds: data.crossSellProductIds,
     };
@@ -174,6 +176,23 @@ export default function CatalogoPage() {
       },
       ctaText: product.ctaText || '¡Lo quiero ahora!',
       crossSellProductIds: product.crossSellProductIds || [],
+      promotionBar: product.promotionBar || {
+        enabled: false,
+        message: '¡Oferta por tiempo limitado! Quedan {hours}h {minutes}m {seconds}s',
+        hours: 24,
+        bgColor: '#dc2626',
+        textColor: '#ffffff',
+      },
+      socialProof: product.socialProof || {
+        enabled: false,
+        interval: 5,
+        messages: [
+          '{name} de {city} compró este producto',
+          '{name} de {city} acabó de comprar',
+          '{name} de {city} se lo llevó',
+        ],
+        avatarFiles: [],
+      },
       landingBlocks: landingBlocks,
     });
     setShowForm(true);

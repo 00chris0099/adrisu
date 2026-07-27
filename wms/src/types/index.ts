@@ -84,9 +84,26 @@ export interface Product {
   discountPercent?: number | null;
   barcode?: string | null;
   lowStockAlert?: number | null;
+  promotionBar?: PromotionBarConfig | null;
+  socialProof?: SocialProofConfig | null;
   createdAt: string;
   updatedAt: string;
   category?: Category | null;
+}
+
+export interface PromotionBarConfig {
+  enabled: boolean;
+  message: string;
+  hours: number;
+  bgColor: string;
+  textColor: string;
+}
+
+export interface SocialProofConfig {
+  enabled: boolean;
+  interval: number;
+  messages: string[];
+  avatarFiles: string[];
 }
 
 export interface Customer {
