@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Package, ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -17,6 +17,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [landingBlocks, setLandingBlocks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [showFixedCta, setShowFixedCta] = useState(false);
+  const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -74,6 +76,19 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     fetchProduct();
   }, [params.slug]);
 
+  // Detect when inline CTA scrolls out of view
+  useEffect(() => {
+    if (!ctaRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFixedCta(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(ctaRef.current);
+    return () => observer.disconnect();
+  }, [product]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -99,15 +114,19 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const fp = Number(product.finalPrice) || mainPrice;
   const discPct = product.discountPercent || 0;
   const showStrike = discPct > 0 && fp < mainPrice;
+  const hasPromo = product.promotionBar?.enabled;
 
   return (
-    <div className={`min-h-screen flex flex-col ${product.promotionBar?.enabled ? 'pt-10' : ''}`}>
+    <div className={`min-h-screen flex flex-col ${hasPromo ? 'pt-10' : ''}`}>
       {/* Promotion Bar */}
-      {product.promotionBar?.enabled && (
+      {hasPromo && (
         <PromotionBar config={product.promotionBar} />
       )}
 
-      <Navbar />
+      {/* Navbar: hidden on mobile when promotion bar is active */}
+      <div className={hasPromo ? 'hidden md:block' : ''}>
+        <Navbar />
+      </div>
 
       <main className="flex-1 container-wide py-4 md:py-8 pb-24 md:pb-8">
         {/* Breadcrumb */}
@@ -197,9 +216,11 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             )}
 
             {/* CTA */}
-            <button onClick={() => setCheckoutOpen(true)} className="btn-brand w-full py-3.5 text-base hidden md:block">
-              {product.ctaText}
-            </button>
+            <div ref={ctaRef}>
+              <button onClick={() => setCheckoutOpen(true)} className="btn-brand w-full py-3.5 text-base">
+                {product.ctaText}
+              </button>
+            </div>
 
             {/* Stock */}
             {product.stock <= 5 && product.stock > 0 && (
@@ -289,23 +310,25 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
         <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} product={product} />
       )}
 
-      {/* Social Proof Toast */}
+      {/* Social Proof Toast - positioned above the fixed CTA */}
       {product.socialProof?.enabled && (
         <SocialProofToast config={product.socialProof} productName={product.name} />
       )}
 
-      {/* Mobile CTA - fixed bottom */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 p-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-gray-900">S/ {fp}</p>
-            {discPct > 0 && <p className="text-xs text-green-600 font-medium">-{discPct}% OFF</p>}
+      {/* Mobile CTA - fixed bottom, only shows when inline CTA is out of view */}
+      {showFixedCta && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-gray-900">S/ {fp}</p>
+              {discPct > 0 && <p className="text-xs text-green-600 font-medium">-{discPct}% OFF</p>}
+            </div>
+            <button onClick={() => setCheckoutOpen(true)} className="btn-brand px-6 py-3 text-sm font-semibold shrink-0">
+              {product.ctaText}
+            </button>
           </div>
-          <button onClick={() => setCheckoutOpen(true)} className="btn-brand px-6 py-3 text-sm font-semibold shrink-0">
-            {product.ctaText}
-          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }

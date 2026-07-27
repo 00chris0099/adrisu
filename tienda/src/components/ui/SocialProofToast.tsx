@@ -60,16 +60,18 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
     setPerson(buildPerson());
 
     const interval = Math.max(config.interval || 5, 3) * 1000;
+    const hideDuration = 4000;
+    const extraPause = 1000;
 
     const showTimer = setInterval(() => {
       setPerson(buildPerson());
       setVisible(true);
-      setTimeout(() => setVisible(false), 4000);
-    }, interval);
+      setTimeout(() => setVisible(false), hideDuration);
+    }, interval + hideDuration + extraPause);
 
     const firstTimer = setTimeout(() => {
       setVisible(true);
-      setTimeout(() => setVisible(false), 4000);
+      setTimeout(() => setVisible(false), hideDuration);
     }, Math.max(interval, 5000));
 
     return () => { clearInterval(showTimer); clearTimeout(firstTimer); };
@@ -78,7 +80,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
   if (!mounted || !config.enabled || !productName) return null;
 
   return (
-    <div className={`fixed bottom-3 left-3 z-50 transition-all duration-500 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
+    <div className={`fixed bottom-20 left-3 z-50 transition-all duration-500 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
       <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex items-center gap-3 max-w-xs">
         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-blue-100">
           <img
