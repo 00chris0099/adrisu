@@ -12,7 +12,9 @@ interface Offer {
   description: string | null;
   type: string; // "quantity" | "addon"
   quantity: number;
-  price: number | string;
+  price: number;
+  compareAtPrice: number | null;
+  discountPercent: number | null;
   linkedProductId: string | null;
   imageUrl: string | null;
   sortOrder: number;
@@ -104,9 +106,15 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
         .then(r => r.json())
         .then(data => {
           if (data.data) {
-            setOffers(data.data);
+            const normalized = data.data.map((o: any) => ({
+              ...o,
+              price: Number(o.price) || 0,
+              compareAtPrice: o.compareAtPrice != null ? Number(o.compareAtPrice) : null,
+              discountPercent: o.discountPercent != null ? Number(o.discountPercent) : null,
+            }));
+            setOffers(normalized);
             // Fetch linked products for addon offers
-            const addonOffers = data.data.filter((o: Offer) => o.type === 'addon' && o.linkedProductId);
+            const addonOffers = normalized.filter((o: Offer) => o.type === 'addon' && o.linkedProductId);
             const linkedIds = addonOffers.map((o: Offer) => o.linkedProductId);
             if (linkedIds.length > 0) {
               fetch(`/api/v1/products?limit=50`)
@@ -144,6 +152,11 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
   // User tries to close checkout - show discount popup instead
   const handleAttemptClose = () => {
     if (step === 'done' || step === 'processing') {
+      onClose();
+      return;
+    }
+    // Discount already accepted — just close
+    if (discountApplied) {
       onClose();
       return;
     }
@@ -445,9 +458,13 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
                     onClick={() => setSelectedOffer('main')}
                     className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${selectedOffer === 'main' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
                   >
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
-                      <Tag size={18} className="text-green-600" />
-                    </div>
+                    {product.images?.[0] ? (
+                      <img src={product.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                        <Tag size={18} className="text-green-600" />
+                      </div>
+                    )}
                     <div className="flex-1 text-left min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
                       <p className="text-[10px] text-gray-500">Producto individual</p>
@@ -500,34 +517,45 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
               </div>
             )}
 
-            {/* Product Summary */}
+            {/* Product Summary - updates with selected offer */}
             <div className="bg-gray-50 rounded-xl p-4 flex gap-3">
-              {product.images?.[0] ? (
-                <img src={product.images[0]} alt="" className="w-20 h-20 rounded-lg object-cover" />
-              ) : (
-                <div className="w-20 h-20 bg-gray-200 rounded-lg" />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate">{product.name}</p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  {(() => {
-                    const rawP = Number(product?.price) || 0;
-                    const discPct = product?.discountPercent || 0;
-                    const finalP = getFinalPrice(rawP, discPct);
-                    const hasDiscount = discPct > 0 && finalP < rawP;
-                    const showStrike = hasDiscount;
-                    return (
-                      <>
-                        {showStrike && <span className="text-sm text-gray-400 line-through">S/ {rawP}</span>}
-                        <span className="text-lg font-bold text-pink-600">S/ {finalP}</span>
-                        {discPct > 0 && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-full font-bold">-{discPct}%</span>
+              {(() => {
+                const offerImg = activeOffer?.imageUrl || product.images?.[0];
+                const offerName = activeOffer ? activeOffer.name : product.name;
+                const offerDesc = activeOffer?.description || (activeOffer?.type === 'quantity' ? `${activeOffer.quantity} unidades` : null);
+                const rawP = Number(product?.price) || 0;
+                const discPct = product?.discountPercent || 0;
+                const baseFinalP = getFinalPrice(rawP, discPct);
+                let offerDisplayPrice = productFinalPrice;
+                let originalDisplayPrice = rawP;
+                let displayDiscountPct = discPct;
+                if (activeOffer) {
+                  offerDisplayPrice = productFinalPrice;
+                  originalDisplayPrice = activeOffer.compareAtPrice ? Number(activeOffer.compareAtPrice) : rawP;
+                  displayDiscountPct = activeOffer.discountPercent ? Number(activeOffer.discountPercent) : (activeOffer.compareAtPrice && Number(activeOffer.compareAtPrice) > productFinalPrice ? Math.round((1 - productFinalPrice / Number(activeOffer.compareAtPrice)) * 100) : 0);
+                }
+                const hasDiscount = displayDiscountPct > 0 && offerDisplayPrice < originalDisplayPrice;
+                return (
+                  <>
+                    {offerImg ? (
+                      <img src={offerImg} alt="" className="w-20 h-20 rounded-lg object-cover shrink-0" />
+                    ) : (
+                      <div className="w-20 h-20 bg-gray-200 rounded-lg shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900 truncate">{offerName}</p>
+                      {offerDesc && <p className="text-[10px] text-gray-500 mt-0.5">{offerDesc}</p>}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        {hasDiscount && <span className="text-sm text-gray-400 line-through">S/ {Number(originalDisplayPrice).toFixed(2)}</span>}
+                        <span className="text-lg font-bold text-pink-600">S/ {offerDisplayPrice.toFixed(2)}</span>
+                        {displayDiscountPct > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-full font-bold">-{displayDiscountPct}%</span>
                         )}
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
 
@@ -673,23 +701,34 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
 
             {/* Summary */}
             <div className="bg-gray-50 rounded-xl p-3 space-y-1.5">
-              {/* Show main product original price strikethrough */}
+              {/* Show original price strikethrough (product discount or offer compareAtPrice) */}
               {(() => {
                 const rawP = Number(product?.price) || 0;
                 const discPct = product?.discountPercent || 0;
                 const finalP = getFinalPrice(rawP, discPct);
-                const hasDiscount = discPct > 0 && finalP < rawP;
-                const showStrike = hasDiscount;
-                return (
-                  <>
-                    {showStrike && (
+                if (activeOffer) {
+                  const offerCompare = activeOffer.compareAtPrice ? Number(activeOffer.compareAtPrice) : null;
+                  const hasDiscount = offerCompare && offerCompare > productFinalPrice;
+                  if (hasDiscount) {
+                    return (
                       <div className="flex justify-between text-xs text-gray-400">
-                        <span>{product.name}</span>
-                        <span className="line-through">S/ {Number(rawP).toFixed(2)}</span>
+                        <span>{activeOffer.name}</span>
+                        <span className="line-through">S/ {Number(offerCompare).toFixed(2)}</span>
                       </div>
-                    )}
-                  </>
-                );
+                    );
+                  }
+                  return null;
+                }
+                const hasDiscount = discPct > 0 && finalP < rawP;
+                if (hasDiscount) {
+                  return (
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>{product.name}</span>
+                      <span className="line-through">S/ {Number(rawP).toFixed(2)}</span>
+                    </div>
+                  );
+                }
+                return null;
               })()}
               {/* Show additional offers with their OWN compareAtPrice */}
               {extraItems.map((item, i) => {
@@ -711,9 +750,9 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
                   </div>
                 );
               })}
-              {/* Main product final price */}
+              {/* Main product / offer final price */}
               <div className="flex justify-between text-xs text-gray-600">
-                <span>{product.name}</span>
+                <span>{activeOffer ? activeOffer.name : product.name}</span>
                 <span className="font-medium text-pink-600">S/ {productFinalPrice.toFixed(2)}</span>
               </div>
               {selectedSuggested.length > 0 && (
@@ -798,6 +837,7 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
             title: product?.discountPopup?.title || '¡Descuento exclusivo!',
             description: product?.discountPopup?.description || `Obtén un ${extraDiscountPercent}% extra de descuento en tu compra. ¡Aprovecha esta oferta!`,
             discountPercent: product?.discountPopup?.discountPercent || extraDiscountPercent,
+            discountAmount: product?.discountPopup?.discountAmount ?? null,
             ctaText: product?.discountPopup?.ctaText || '¡Aplicar descuento!',
             ctaUrl: product?.discountPopup?.ctaUrl || '#',
             imageUrl: product?.discountPopup?.imageUrl || product?.images?.[0] || '',
