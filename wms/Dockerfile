@@ -10,8 +10,4 @@ RUN pnpm --filter @repo/wms build
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# Copy standalone output
-RUN cp -r .next/standalone . .next/static .next/standalone/.next/static 2>/dev/null || true
-RUN cp -r public .next/standalone/public 2>/dev/null || true
-
-CMD ["node", ".next/standalone/server.js"]
+CMD ["npx", "next", "start", "-p", "3000"]
