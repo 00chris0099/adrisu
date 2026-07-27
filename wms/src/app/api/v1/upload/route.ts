@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData();
-    const image = formData.get('image');
+    const image = formData.get('image') || formData.get('file');
 
     if (!image) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });

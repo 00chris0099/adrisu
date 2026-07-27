@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productId, name, description, price, compareAtPrice, discountPercent, imageUrl, type, linkedProductId, sortOrder } = body;
+    const { productId: pid, name, description, price, compareAtPrice, discountPercent, imageUrl, type, linkedProductId: lpid, sortOrder, product_id, linked_product_id } = body;
+    const productId = pid || product_id;
+    const linkedProductId = lpid || linked_product_id;
 
     if (!productId || !name || price === undefined) {
       return apiError('productId, name, and price are required', 400);
