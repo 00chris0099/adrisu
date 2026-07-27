@@ -46,7 +46,13 @@ export default function OffersTab() {
     fetch(`/api/v1/offers?product_id=${productId}`)
       .then(r => r.json())
       .then(data => {
-        setOffers(data.data?.items || data.data || []);
+        const items = (data.data?.items || data.data || []).map((o: any) => ({
+          ...o,
+          price: Number(o.price),
+          compareAtPrice: o.compareAtPrice != null ? Number(o.compareAtPrice) : null,
+          discountPercent: o.discountPercent != null ? Number(o.discountPercent) : null,
+        }));
+        setOffers(items);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
