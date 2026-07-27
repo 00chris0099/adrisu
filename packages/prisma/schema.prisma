@@ -772,7 +772,9 @@ model Offer {
   description     String?
   type            String   @default("quantity") // "quantity" | "addon"
   quantity        Int      @default(1) // unidades en el pack (para type=quantity)
-  price           Decimal  @db.Decimal(10, 2) // precio de la oferta
+  price           Decimal  @db.Decimal(10, 2) // precio con descuento
+  compareAtPrice  Decimal? @map("compare_at_price") @db.Decimal(10, 2) // precio original
+  discountPercent Decimal? @map("discount_percent") @db.Decimal(5, 2) // porcentaje de descuento
   linkedProductId String?  @map("linked_product_id") @db.Uuid // producto agregado (para type=addon)
   imageUrl        String?  @map("image_url")
   sortOrder       Int      @default(0) @map("sort_order")

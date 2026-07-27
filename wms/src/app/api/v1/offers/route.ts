@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productId, name, price, type, description, quantity, linkedProductId, imageUrl, sortOrder, isActive } = body;
+    const { productId, name, price, type, description, quantity, linkedProductId, imageUrl, sortOrder, isActive, compareAtPrice, discountPercent } = body;
 
     if (!productId) return apiError('productId is required', 400);
     if (!name) return apiError('name is required', 400);
@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
         type,
         description: description || null,
         quantity: quantity || 1,
+        compareAtPrice: compareAtPrice ?? null,
+        discountPercent: discountPercent ?? null,
         linkedProductId: linkedProductId || null,
         imageUrl: imageUrl || null,
         sortOrder: sortOrder ?? 0,

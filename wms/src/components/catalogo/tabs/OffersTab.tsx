@@ -13,6 +13,7 @@ interface Offer {
   quantity: number;
   price: number;
   compareAtPrice: number | null;
+  discountPercent: number | null;
   linkedProductId: string | null;
   imageUrl: string | null;
   sortOrder: number;
@@ -69,6 +70,7 @@ export default function OffersTab() {
       quantity: type === 'quantity' ? 1 : 1,
       price: 0,
       compareAtPrice: null,
+      discountPercent: null,
       linkedProductId: null,
       imageUrl: null,
       sortOrder: offers.length,
@@ -84,14 +86,29 @@ export default function OffersTab() {
 
   const handleSave = async () => {
     if (!editingOffer?.name || !editingOffer.productId) return;
+    if (!editingOffer.compareAtPrice || editingOffer.compareAtPrice <= 0) return;
     setSaving(true);
     try {
+      const payload = {
+        productId: editingOffer.productId,
+        name: editingOffer.name,
+        description: editingOffer.description || null,
+        type: editingOffer.type,
+        quantity: editingOffer.quantity || 1,
+        compareAtPrice: editingOffer.compareAtPrice,
+        discountPercent: editingOffer.discountPercent || 0,
+        price: editingOffer.price ?? editingOffer.compareAtPrice,
+        linkedProductId: editingOffer.linkedProductId || null,
+        imageUrl: editingOffer.imageUrl || null,
+        sortOrder: editingOffer.sortOrder ?? 0,
+        isActive: editingOffer.isActive ?? true,
+      };
       const method = editingOffer.id ? 'PUT' : 'POST';
       const url = editingOffer.id ? `/api/v1/offers/${editingOffer.id}` : '/api/v1/offers';
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingOffer),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         const data = await res.json();
@@ -179,6 +196,9 @@ export default function OffersTab() {
 
   const renderOfferPrice = (offer: Offer) => {
     const hasCompare = offer.compareAtPrice != null && offer.compareAtPrice > offer.price;
+    const discountPct = offer.discountPercent != null && offer.discountPercent > 0
+      ? offer.discountPercent
+      : (hasCompare ? Math.round((1 - offer.price / offer.compareAtPrice!) * 100) : 0);
     return (
       <div className="flex items-center gap-2">
         {hasCompare && (
@@ -187,9 +207,9 @@ export default function OffersTab() {
         <span className={`text-xs font-bold ${hasCompare ? 'text-red-400' : 'text-green-400'}`}>
           S/ {offer.price.toFixed(2)}
         </span>
-        {hasCompare && (
+        {discountPct > 0 && (
           <span className="px-1.5 py-0.5 text-[10px] font-medium bg-red-500/20 text-red-400 rounded">
-            -{Math.round((1 - offer.price / offer.compareAtPrice!) * 100)}%
+            -{discountPct}%
           </span>
         )}
       </div>
@@ -428,11 +448,21 @@ export default function OffersTab() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Precio (S/) *</label>
+                  <label className="block text-xs text-gray-400 mb-1">Precio original (S/) *</label>
                   <input
                     type="number"
-                    value={editingOffer.price || ''}
-                    onChange={(e) => setEditingOffer(prev => prev ? { ...prev, price: parseFloat(e.target.value) || 0 } : prev)}
+                    value={editingOffer.compareAtPrice ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value ? parseFloat(e.target.value) : null;
+                      setEditingOffer(prev => {
+                        if (!prev) return prev;
+                        const updated = { ...prev, compareAtPrice: val };
+                        if (val !== null && prev.discountPercent) {
+                          updated.price = parseFloat((val * (1 - prev.discountPercent / 100)).toFixed(2));
+                        }
+                        return updated;
+                      });
+                    }}
                     min="0"
                     step="0.01"
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
@@ -440,18 +470,48 @@ export default function OffersTab() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Precio anterior (S/)</label>
+                  <label className="block text-xs text-gray-400 mb-1">Descuento (%)</label>
                   <input
                     type="number"
-                    value={editingOffer.compareAtPrice ?? ''}
-                    onChange={(e) => setEditingOffer(prev => prev ? { ...prev, compareAtPrice: e.target.value ? parseFloat(e.target.value) : null } : prev)}
+                    value={editingOffer.discountPercent ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value ? parseFloat(e.target.value) : null;
+                      setEditingOffer(prev => {
+                        if (!prev) return prev;
+                        const updated = { ...prev, discountPercent: val };
+                        if (val !== null && prev.compareAtPrice) {
+                          updated.price = parseFloat((prev.compareAtPrice * (1 - val / 100)).toFixed(2));
+                        }
+                        return updated;
+                      });
+                    }}
                     min="0"
-                    step="0.01"
+                    max="100"
+                    step="1"
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
-                    placeholder="Opcional"
+                    placeholder="0"
                   />
                 </div>
               </div>
+
+              {(editingOffer.compareAtPrice != null && editingOffer.compareAtPrice > 0) && (
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">Precio final</span>
+                    <div className="flex items-center gap-2">
+                      {editingOffer.discountPercent != null && editingOffer.discountPercent > 0 && (
+                        <span className="text-xs text-gray-500 line-through">S/ {editingOffer.compareAtPrice!.toFixed(2)}</span>
+                      )}
+                      <span className="text-sm font-bold text-green-400">S/ {(editingOffer.price ?? 0).toFixed(2)}</span>
+                      {editingOffer.discountPercent != null && editingOffer.discountPercent > 0 && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-green-500/20 text-green-400 rounded">
+                          -{editingOffer.discountPercent}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {editingOffer.type === 'quantity' && (
                 <div>
@@ -533,7 +593,7 @@ export default function OffersTab() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={saving || !editingOffer.name}
+                disabled={saving || !editingOffer.name || !editingOffer.compareAtPrice || editingOffer.compareAtPrice <= 0}
                 className="flex-1 px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
               >
                 {saving && <Loader2 size={14} className="animate-spin" />}

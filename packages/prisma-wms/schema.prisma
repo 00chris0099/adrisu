@@ -1113,6 +1113,8 @@ model Offer {
   type            String   @default("quantity") // "quantity" | "addon"
   quantity        Int      @default(1)
   price           Decimal  @db.Decimal(10, 2)
+  compareAtPrice  Decimal? @map("compare_at_price") @db.Decimal(10, 2)
+  discountPercent Decimal? @map("discount_percent") @db.Decimal(5, 2)
   linkedProductId String?  @map("linked_product_id") @db.Uuid
   imageUrl        String?  @map("image_url")
   sortOrder       Int      @default(0) @map("sort_order")
