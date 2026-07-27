@@ -59,7 +59,7 @@ export default function PromotionBar({ config }: { config: PromotionBarConfig })
 
   return (
     <div
-      className="w-full py-2 px-4 text-center text-xs md:text-sm font-medium"
+      className="fixed top-0 left-0 right-0 z-50 py-2 px-4 text-center text-xs md:text-sm font-medium"
       style={{ backgroundColor: config.bgColor, color: config.textColor }}
     >
       {message}

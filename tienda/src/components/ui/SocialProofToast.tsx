@@ -7,12 +7,15 @@ const NAMES = ['María', 'Carlos', 'Ana', 'Luis', 'Rosa', 'Jorge', 'Claudia', 'P
 const CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo', 'Ica', 'Huancayo', 'Cajamarca', 'Puno'];
 const TIME_OPTIONS = ['hace 2 min', 'hace 5 min', 'hace 8 min', 'hace 12 min', 'hace 18 min', 'hace 25 min'];
 
+const ALL_AVATARS = [
+  'Abigail.jpg', 'Alejandro.jpg', 'Benjamin.jpg', 'Daniela.jpg', 'Eric.jpg',
+  'jeremy.jpg', 'juan.jpg', 'Liliana.jpg', 'lucas.jpg',
+  'martina.jpg', 'mateo.jpg', 'melina.jpg', 'santiago.jpg', 'sofia.jpg',
+  'thiago.jpg', 'valentino.jpg', 'zoey.jpg',
+];
+
 function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 interface SocialProofConfig {
@@ -37,12 +40,12 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
   useEffect(() => {
     if (!mounted || !config.enabled || !productName) return;
 
+    const avatars = config.avatarFiles.length > 0 ? config.avatarFiles : ALL_AVATARS;
+
     const buildPerson = () => {
       const name = randomFrom(NAMES);
       const city = randomFrom(CITIES);
-      const avatar = config.avatarFiles.length > 0
-        ? `/avatars/${randomFrom(config.avatarFiles)}`
-        : '';
+      const avatar = `/avatars/${randomFrom(avatars)}`;
       const msgTemplate = config.messages.length > 0
         ? randomFrom(config.messages)
         : '{name} de {city} compró este producto';
@@ -75,21 +78,19 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
   if (!mounted || !config.enabled || !productName) return null;
 
   return (
-    <div className={`fixed top-3 left-3 md:bottom-4 md:left-4 md:top-auto z-50 transition-all duration-500 ${visible ? 'translate-y-0 opacity-100' : '-translate-y-4 md:translate-y-4 opacity-0 pointer-events-none'}`}>
+    <div className={`fixed bottom-3 left-3 z-50 transition-all duration-500 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
       <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex items-center gap-3 max-w-xs">
-        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
-          {person.avatar ? (
-            <img
-              src={person.avatar}
-              alt={person.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-          ) : null}
-          <User size={14} className={`text-blue-600 ${person.avatar ? 'hidden' : ''}`} />
+        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-blue-100">
+          <img
+            src={person.avatar}
+            alt={person.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+          <User size={14} className="text-blue-600 hidden" />
         </div>
         <div className="min-w-0">
           <p className="text-xs text-gray-700">{person.message}</p>

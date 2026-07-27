@@ -101,7 +101,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const showStrike = discPct > 0 && fp < mainPrice;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${product.promotionBar?.enabled ? 'pt-10' : ''}`}>
       {/* Promotion Bar */}
       {product.promotionBar?.enabled && (
         <PromotionBar config={product.promotionBar} />
@@ -109,7 +109,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
       <Navbar />
 
-      <main className="flex-1 container-wide py-4 md:py-8">
+      <main className="flex-1 container-wide py-4 md:py-8 pb-24 md:pb-8">
         {/* Breadcrumb */}
         <nav className="hidden md:flex items-center gap-2 text-sm text-gray-400 mb-6">
           <Link href="/" className="hover:text-gray-900 transition-colors">Inicio</Link>
@@ -197,7 +197,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             )}
 
             {/* CTA */}
-            <button onClick={() => setCheckoutOpen(true)} className="btn-brand w-full py-3.5 text-base">
+            <button onClick={() => setCheckoutOpen(true)} className="btn-brand w-full py-3.5 text-base hidden md:block">
               {product.ctaText}
             </button>
 
@@ -293,6 +293,19 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       {product.socialProof?.enabled && (
         <SocialProofToast config={product.socialProof} productName={product.name} />
       )}
+
+      {/* Mobile CTA - fixed bottom */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-gray-900">S/ {fp}</p>
+            {discPct > 0 && <p className="text-xs text-green-600 font-medium">-{discPct}% OFF</p>}
+          </div>
+          <button onClick={() => setCheckoutOpen(true)} className="btn-brand px-6 py-3 text-sm font-semibold shrink-0">
+            {product.ctaText}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
