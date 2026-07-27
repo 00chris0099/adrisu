@@ -8,7 +8,7 @@ COPY . .
 
 FROM base AS wms
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @repo/prisma-wms db:generate
+RUN pnpm --filter @repo/prisma db:generate
 RUN pnpm --filter @repo/wms build
 ENV NODE_ENV=production
 EXPOSE 3000

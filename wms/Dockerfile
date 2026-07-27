@@ -4,7 +4,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 COPY . .
 RUN pnpm install
-RUN pnpm --filter @repo/prisma-wms db:generate
+RUN pnpm --filter @repo/prisma db:generate
 RUN pnpm --filter @repo/wms build
 
 ENV NODE_ENV=production

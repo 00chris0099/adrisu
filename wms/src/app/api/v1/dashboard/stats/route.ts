@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
           // Low stock: count products where stock <= lowStockAlert
           const lowStockResult = await prisma.$queryRawUnsafe<{ count: number }[]>(
-            `SELECT COUNT(*)::int as count FROM "Product" WHERE "lowStockAlert" IS NOT NULL AND stock <= "lowStockAlert"`
+            `SELECT COUNT(*)::int as count FROM "products" WHERE "low_stock_alert" IS NOT NULL AND stock <= "low_stock_alert"`
           );
           const lowStockProducts = lowStockResult[0]?.count || 0;
 
