@@ -94,7 +94,7 @@ function TiendaContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 container-wide py-8 pb-24 md:pb-8">
+      <main className="flex-1 container-wide py-8 md:pb-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-display-sm text-gray-900">{activeCategoryName}</h1>

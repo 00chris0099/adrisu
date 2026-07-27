@@ -13,7 +13,7 @@ export default function CarritoPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-1 max-w-3xl mx-auto px-4 py-8 pb-24 md:pb-8 w-full">
+        <main className="flex-1 max-w-3xl mx-auto px-4 py-8 md:pb-8 w-full">
           <h1 className="text-3xl font-extrabold mb-8">Mi Carrito</h1>
           <div className="text-center py-16">
             <ShoppingBag size={48} className="mx-auto mb-4 text-gray-300" />
@@ -30,7 +30,7 @@ export default function CarritoPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 max-w-3xl mx-auto px-4 py-8 pb-24 md:pb-8 w-full">
+      <main className="flex-1 max-w-3xl mx-auto px-4 py-8 md:pb-8 w-full">
         <h1 className="text-3xl font-extrabold mb-8">Mi Carrito ({itemCount()} items)</h1>
 
         <div className="space-y-4">

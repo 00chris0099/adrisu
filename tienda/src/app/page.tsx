@@ -39,7 +39,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 pb-20 md:pb-0">
+      <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden bg-gray-950">
           <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'url(https://i.ibb.co/kVhw0H2H/Products-decorative-flyer-webpage-2-K-202607111423.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />

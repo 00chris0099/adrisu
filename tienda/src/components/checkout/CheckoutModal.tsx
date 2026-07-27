@@ -406,6 +406,35 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
           </div>
         ) : (
           <div className="p-4 space-y-4">
+            {/* Mobile: Sticky CTA at TOP */}
+            <div className="md:hidden sticky top-0 -mx-4 -mt-4 px-4 pt-3 pb-2 bg-white/95 backdrop-blur-sm border-b border-gray-100 z-10">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500">Total</span>
+                <span className="text-sm font-bold text-gray-900">S/ {total.toFixed(2)}</span>
+              </div>
+              <button
+                onClick={() => {
+                  if (!validate()) return;
+                  const allItemsText = [
+                    `- ${product.name} x${activeOffer?.type === 'quantity' ? activeOffer.quantity : 1} = S/ ${productFinalPrice.toFixed(2)}`,
+                    ...(activeOffer?.type === 'addon' && linkedProducts[activeOffer.linkedProductId || '']
+                      ? [`- ${linkedProducts[activeOffer.linkedProductId!].name} x1 = S/ ${Number(activeOffer.price).toFixed(2)}`]
+                      : []),
+                    ...extraItems.map(e => `- ${e.name} x1 = S/ ${Number(e.price).toFixed(2)}`),
+                    ...selectedSuggested.map(sp => `- ${sp.name} x1 = S/ ${Number(sp.price).toFixed(2)}`),
+                  ].join('%0A');
+                  const offerLabel = activeOffer ? `%0A🏷️ *Oferta:* ${encodeURIComponent(activeOffer.name)}` : '';
+                  const msg = `🛒 *Nuevo Pedido - AdriSu Kids*%0A%0A👤 *Cliente:* ${encodeURIComponent(form.name)}%0A📱 *Celular:* ${form.phone}%0A📧 *Email:* ${encodeURIComponent(form.email || 'No proporcionado')}%0A%0A📦 *Productos:*%0A${allItemsText}${offerLabel}%0A%0A💰 *Resumen:*%0A- Subtotal: S/ ${subtotal.toFixed(2)}%0A- Envio (aproximadamente): S/ ${shipping.toFixed(2)}%0A${discountApplied ? `- Descuento extra (-${extraDiscountPercent}%): aplicado%0A` : ''}- *TOTAL: S/ ${total.toFixed(2)}*%0A%0A📍 *Direccion de envio:*%0A${encodeURIComponent(form.department)} - ${encodeURIComponent(form.province)} - ${encodeURIComponent(form.district)}%0A${encodeURIComponent(form.address)}%0ARef: ${encodeURIComponent(form.reference || 'Sin referencia')}`;
+                  window.open(`https://wa.me/51951308866?text=${msg}`, '_blank');
+                  setStep('done');
+                  setOrderNumber('PENDIENTE');
+                }}
+                className="w-full py-3 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 transition-colors"
+              >
+                Realizar pedido
+              </button>
+            </div>
+
             {/* Offer Cards - at TOP of modal */}
             {offers.length > 0 && (
               <div>
@@ -735,7 +764,7 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
               <p className="text-[10px] text-amber-700 mt-0.5">Tu pedido sera confirmado y coordinado para entrega.</p>
             </div>
 
-            {/* Submit - Redirige a WhatsApp */}
+            {/* Submit - Desktop only (mobile has sticky CTA at top) */}
             <button
               onClick={() => {
                 if (!validate()) return;
@@ -753,7 +782,7 @@ export default function CheckoutModal({ open, onClose, product }: CheckoutModalP
                 setStep('done');
                 setOrderNumber('PENDIENTE');
               }}
-              className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 transition-colors"
+              className="hidden md:block w-full py-3.5 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 transition-colors"
             >
               Realizar pedido
             </button>

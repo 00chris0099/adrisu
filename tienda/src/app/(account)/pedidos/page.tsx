@@ -49,7 +49,7 @@ export default function MisPedidosPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 max-w-3xl mx-auto px-4 py-8 pb-24 md:pb-8 w-full">
+      <main className="flex-1 max-w-3xl mx-auto px-4 py-8 md:pb-8 w-full">
         <h1 className="text-3xl font-extrabold mb-8">Mis Pedidos</h1>
 
         {loading && (
