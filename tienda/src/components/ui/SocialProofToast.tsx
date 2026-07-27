@@ -5,16 +5,16 @@ import { useState, useEffect } from 'react';
 const NAMES = ['María', 'Carlos', 'Ana', 'Luis', 'Rosa', 'Jorge', 'Claudia', 'Pedro', 'Sofía', 'Miguel', 'Elena', 'Fernando', 'Patricia', 'Roberto', 'Diana', 'Andrés', 'Carmen', 'Juan', 'Laura', 'Ricardo'];
 const CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo', 'Ica', 'Huancayo', 'Cajamarca', 'Puno'];
 const TIME_OPTIONS = ['hace 2 min', 'hace 5 min', 'hace 8 min', 'hace 12 min', 'hace 18 min', 'hace 25 min'];
-
-const ALL_AVATARS = [
-  'Abigail.jpg', 'Alejandro.jpg', 'Benjamin.jpg', 'Daniela.jpg', 'Eric.jpg',
-  'jeremy.jpg', 'juan.jpg', 'Liliana.jpg', 'lucas.jpg',
-  'martina.jpg', 'mateo.jpg', 'melina.jpg', 'santiago.jpg', 'sofia.jpg',
-  'thiago.jpg', 'valentino.jpg', 'zoey.jpg',
-];
+const AVATAR_COLORS = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#6366f1'];
 
 function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
 }
 
 interface SocialProofConfig {
@@ -32,19 +32,16 @@ interface SocialProofToastProps {
 export default function SocialProofToast({ config, productName }: SocialProofToastProps) {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [person, setPerson] = useState({ name: '', city: '', avatar: '', message: '', time: '' });
+  const [person, setPerson] = useState({ name: '', city: '', message: '', time: '' });
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!mounted || !config.enabled || !productName) return;
 
-    const avatars = config.avatarFiles.length > 0 ? config.avatarFiles : ALL_AVATARS;
-
     const buildPerson = () => {
       const name = randomFrom(NAMES);
       const city = randomFrom(CITIES);
-      const avatar = `/avatars/${randomFrom(avatars)}`;
       const msgTemplate = config.messages.length > 0
         ? randomFrom(config.messages)
         : '{name} de {city} compró este producto';
@@ -53,7 +50,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
         .replace('{city}', city)
         .replace('{product}', productName);
       const time = randomFrom(TIME_OPTIONS);
-      return { name, city, avatar, message, time };
+      return { name, city, message, time };
     };
 
     setPerson(buildPerson());
@@ -78,20 +75,17 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
 
   if (!mounted || !config.enabled || !productName) return null;
 
+  const initial = person.name ? person.name.charAt(0) : '?';
+  const bgColor = AVATAR_COLORS[hashStr(person.name) % AVATAR_COLORS.length];
+
   return (
     <div className={`fixed bottom-20 left-3 z-50 transition-all duration-500 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
       <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex items-center gap-3 max-w-xs">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-blue-100">
-          <img
-            src={person.avatar}
-            alt={person.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23dbeafe"/><text x="16" y="21" font-family="sans-serif" font-size="14" font-weight="bold" fill="%232563eb" text-anchor="middle">${person.name.charAt(0)}</text></svg>`)}`;
-              (e.target as HTMLImageElement).onerror = null;
-            }}
-          />
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+          style={{ backgroundColor: bgColor }}
+        >
+          {initial}
         </div>
         <div className="min-w-0">
           <p className="text-xs text-gray-700">{person.message}</p>
