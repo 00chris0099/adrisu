@@ -13,60 +13,44 @@ export async function GET(request: NextRequest) {
     if (!q || q.trim().length < 2) {
       return Response.json({
         success: true,
-        data: [],
-        message: 'Envia al menos 2 caracteres para buscar',
+        resultados: [],
+        mensaje: 'Envia al menos 2 caracteres para buscar',
       });
     }
 
-    // WooCommerce path
+    let rawProducts: any[] = [];
+
     if (WOO_CONFIGURED) {
       const { getProducts } = await import('@/lib/woocommerce-server');
       const result = await getProducts({ search: q, perPage: limit });
-      const wooProducts = result.products || [];
-      const results = wooProducts.map((p: any) => ({
-        name: p.name,
-        price: p.price || 0,
-        originalPrice: p.compareAtPrice || null,
-        discount: p.discountPercent || 0,
-        image: p.images?.[0] || null,
-        link: `${STORE_URL}/producto/${p.slug}`,
-        slug: p.slug,
-        stock: p.stock || 0,
-      }));
-      return Response.json({ success: true, data: results, total: results.length });
+      rawProducts = result.products || [];
+    } else {
+      const res = await fetch(`${WMS_URL}/api/v1/products?q=${encodeURIComponent(q)}&limit=${limit}&status=active`);
+      if (res.ok) {
+        const data = await res.json();
+        rawProducts = (data.data || []).filter((p: any) => p.status === 'active');
+      }
     }
 
-    // WMS fallback
-    const res = await fetch(`${WMS_URL}/api/v1/products?q=${encodeURIComponent(q)}&limit=${limit}&status=active`);
-    if (!res.ok) {
-      return Response.json({ success: true, data: [], total: 0 });
-    }
+    const resultados = rawProducts.map((p: any) => {
+      const basePrice = Number(p.price) || 0;
+      const discount = Number(p.discountPercent) || 0;
+      const finalPrice = discount > 0 ? Math.round(basePrice * (1 - discount / 100) * 100) / 100 : basePrice;
+      const stock = p.stock || 0;
+      const image = p.images?.[0] || null;
 
-    const data = await res.json();
-    const products = data.data || [];
+      return {
+        Producto: p.name,
+        Precio: `S/ ${finalPrice.toFixed(2)}`,
+        'Stock Disponible': stock > 0 ? `${stock} unidades` : 'Agotado',
+        'Link de compra': `${STORE_URL}/producto/${p.slug}`,
+        'Link de foto': image || 'Sin imagen',
+      };
+    });
 
-    const results = products
-      .filter((p: any) => p.status === 'active')
-      .map((p: any) => {
-        const basePrice = Number(p.price) || 0;
-        const discount = p.discountPercent ? Number(p.discountPercent) : 0;
-        const finalPrice = discount > 0 ? Math.round(basePrice * (1 - discount / 100) * 100) / 100 : basePrice;
-
-        return {
-          name: p.name,
-          price: finalPrice,
-          originalPrice: discount > 0 ? basePrice : null,
-          discount: discount || null,
-          image: p.images?.[0] || null,
-          link: `${STORE_URL}/producto/${p.slug}`,
-          slug: p.slug,
-          stock: p.stock || 0,
-        };
-      });
-
-    return Response.json({ success: true, data: results, total: results.length });
+    return Response.json({ success: true, resultados, total: resultados.length });
   } catch (error) {
     console.error('[Product Search] Error:', error);
-    return Response.json({ success: true, data: [], total: 0 });
+    return Response.json({ success: true, resultados: [], total: 0 });
   }
 }
