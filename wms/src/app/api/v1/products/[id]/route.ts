@@ -3,6 +3,15 @@ import { prisma } from '@repo/prisma';
 import { apiSuccess, apiError, handleApiError } from '@/lib/api';
 import { cached, invalidateCache } from '@/lib/cache';
 
+function safeParseJson(value: any): any {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'object') return value;
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch { return null; }
+  }
+  return null;
+}
+
 interface Props {
   params: { id: string };
 }
@@ -26,6 +35,9 @@ export async function GET(_request: NextRequest, { params }: Props) {
       costPrice: product.costPrice ? Number(product.costPrice) : null,
       stock: product.stock,
       discountPercent: product.discountPercent ? Number(product.discountPercent) : null,
+      discountPopup: safeParseJson(product.discountPopup),
+      promotionBar: safeParseJson(product.promotionBar),
+      socialProof: safeParseJson(product.socialProof),
     });
   } catch (error) {
     return handleApiError(error, 'product-detail');

@@ -4,6 +4,15 @@ import { apiPaginated, apiError, apiSuccess, parsePagination, getSearchParam, ha
 import { cached, invalidateCache } from '@/lib/cache';
 import { generateSequentialSku } from '@/lib/sku-generator';
 
+function safeParseJson(value: any): any {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'object') return value;
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch { return null; }
+  }
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -74,9 +83,9 @@ export async function GET(request: NextRequest) {
       stock: p.stock,
       discountPercent: p.discountPercent ? Number(p.discountPercent) : null,
       barcode: p.barcode,
-      discountPopup: p.discountPopup || null,
-      promotionBar: p.promotionBar || null,
-      socialProof: p.socialProof || null,
+      discountPopup: safeParseJson(p.discountPopup),
+      promotionBar: safeParseJson(p.promotionBar),
+      socialProof: safeParseJson(p.socialProof),
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     }));

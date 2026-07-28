@@ -4,6 +4,15 @@ import { getProductBySlug } from '@/lib/woocommerce-server';
 const WMS_URL = process.env.WMS_INTERNAL_URL || process.env.NEXT_PUBLIC_WMS_URL || 'https://tiendavirtual-adrisuestesiwms.jpq6em.easypanel.host';
 const WOO_CONFIGURED = !!(process.env.WC_CONSUMER_KEY && process.env.WC_CONSUMER_SECRET && process.env.NEXT_PUBLIC_WORDPRESS_URL);
 
+function safeParseJson(value: any): any {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'object') return value;
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch { return null; }
+  }
+  return null;
+}
+
 interface Props { params: { slug: string } }
 
 export async function GET(_request: NextRequest, { params }: Props) {
@@ -74,9 +83,9 @@ export async function GET(_request: NextRequest, { params }: Props) {
       barcode: p.barcode,
       category: p.category ? { name: p.category.name, slug: p.category.slug } : null,
       categoryId: p.categoryId,
-      discountPopup: p.discountPopup || null,
-      promotionBar: p.promotionBar || null,
-      socialProof: p.socialProof || null,
+      discountPopup: safeParseJson(p.discountPopup),
+      promotionBar: safeParseJson(p.promotionBar),
+      socialProof: safeParseJson(p.socialProof),
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     };

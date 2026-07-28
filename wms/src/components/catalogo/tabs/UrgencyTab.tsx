@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
 import { useProductForm } from '../ProductFormContext';
 import { Clock, Eye, Megaphone, MessageSquare, Plus, X, Upload } from 'lucide-react';
 import type { SocialProofAvatar } from '../ProductFormContext';
@@ -70,8 +69,7 @@ export default function UrgencyTab() {
     }
   };
 
-  const selectedAvatars = socialProof.avatars;
-  const previewAvatar = selectedAvatars[0];
+  const previewAvatar = socialProof.avatars[0];
   const previewMsg = (socialProof.messages[0] || DEFAULT_MESSAGES[0])
     .replace('{name}', previewAvatar?.name || 'María')
     .replace('{city}', previewAvatar?.city || 'Lima')
@@ -173,7 +171,7 @@ export default function UrgencyTab() {
       </div>
 
       {/* ============================================================ */}
-      {/* SOCIAL PROOF */}
+      {/* SOCIAL PROOF — Messages + Avatars combined */}
       {/* ============================================================ */}
       <div className="border-t border-gray-700 pt-6">
         <div className="flex items-center justify-between mb-4">
@@ -239,121 +237,128 @@ export default function UrgencyTab() {
               <p className="text-[10px] text-gray-600 mt-1">Mínimo 3s, recomendado 5s</p>
             </div>
 
-            {/* Message Templates */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs text-gray-500 flex items-center gap-1">
-                  <MessageSquare size={12} />
-                  Plantillas de mensaje
-                </label>
-                <button type="button" onClick={addMessage} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                  <Plus size={12} /> Agregar
-                </button>
+            {/* ======================================================== */}
+            {/* COMBINED: Messages + Avatars in one section */}
+            {/* ======================================================== */}
+            <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/50 space-y-4">
+              <div className="flex items-center gap-2 mb-1">
+                <MessageSquare size={14} className="text-blue-400" />
+                <span className="text-xs font-medium text-gray-300">Mensajes y Avatares</span>
               </div>
-              <p className="text-[10px] text-gray-600 mb-2">
-                Variables: {'{name}'} {'{city}'} {'{product}'} — se reemplazan con los datos del avatar seleccionado
+              <p className="text-[10px] text-gray-500">
+                Cada avatar se asocia aleatoriamente con un mensaje. Variables: {'{name}'} {'{city}'} {'{product}'}
               </p>
-              <div className="space-y-2">
-                {socialProof.messages.map((msg, i) => (
-                  <div key={i} className="flex gap-2">
-                    <span className="text-[10px] text-gray-600 w-4 pt-2.5 shrink-0">{i + 1}.</span>
-                    <input
-                      type="text"
-                      value={msg}
-                      onChange={(e) => updateMessage(i, e.target.value)}
-                      className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
-                      placeholder="{name} de {city} compró este producto"
-                    />
-                    {socialProof.messages.length > 1 && (
-                      <button type="button" onClick={() => removeMessage(i)} className="px-2 text-gray-500 hover:text-red-400">
-                        <X size={14} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {socialProof.messages.length === 0 && (
-                <button type="button" onClick={() => updateSocialProof({ messages: [...DEFAULT_MESSAGES] })} className="text-xs text-gray-500 hover:text-gray-300 underline">
-                  Restablecer mensajes predeterminados
-                </button>
-              )}
-            </div>
 
-            {/* Avatar Selection */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs text-gray-500">Avatares</label>
-                <button type="button" onClick={addAvatar} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                  <Plus size={12} /> Agregar avatar
-                </button>
-              </div>
-              <p className="text-[10px] text-gray-600 mb-3">
-                Cada avatar tiene su imagen, nombre y ciudad. Haz clic en la imagen para cambiarla.
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {socialProof.avatars.map((avatar) => {
-                  const bgColor = AVATAR_COLORS[hashStr(avatar.name) % AVATAR_COLORS.length];
-                  return (
-                    <div key={avatar.id} className="bg-gray-800 border border-gray-700 rounded-lg p-2 space-y-1.5">
-                      <div className="relative group">
-                        <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center">
-                          {avatar.imageUrl ? (
-                            <img
-                              src={avatar.imageUrl}
-                              alt={avatar.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          ) : (
-                            <span className="text-2xl font-bold text-white" style={{ backgroundColor: bgColor, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              {avatar.name?.charAt(0) || '?'}
-                            </span>
-                          )}
-                        </div>
-                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex flex-col items-center justify-center cursor-pointer">
-                          <Upload size={14} className="text-white mb-1" />
-                          <span className="text-[9px] text-white">Cambiar</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) uploadAvatarImage(avatar.id, file);
-                            }}
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => removeAvatar(avatar.id)}
-                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X size={10} />
+              {/* Messages */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[11px] text-gray-400 font-medium">Plantillas de mensaje</label>
+                  <button type="button" onClick={addMessage} className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                    <Plus size={10} /> Agregar
+                  </button>
+                </div>
+                <div className="space-y-1.5">
+                  {socialProof.messages.map((msg, i) => (
+                    <div key={i} className="flex gap-2">
+                      <span className="text-[10px] text-gray-600 w-4 pt-2 shrink-0">{i + 1}.</span>
+                      <input
+                        type="text"
+                        value={msg}
+                        onChange={(e) => updateMessage(i, e.target.value)}
+                        className="flex-1 px-2.5 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        placeholder="{name} de {city} compró este producto"
+                      />
+                      {socialProof.messages.length > 1 && (
+                        <button type="button" onClick={() => removeMessage(i)} className="px-1.5 text-gray-500 hover:text-red-400">
+                          <X size={12} />
                         </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={avatar.name}
-                        onChange={(e) => updateAvatar(avatar.id, { name: e.target.value })}
-                        className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
-                        placeholder="Nombre"
-                      />
-                      <input
-                        type="text"
-                        value={avatar.city}
-                        onChange={(e) => updateAvatar(avatar.id, { city: e.target.value })}
-                        className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
-                        placeholder="Ciudad"
-                      />
+                      )}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+                {socialProof.messages.length === 0 && (
+                  <button type="button" onClick={() => updateSocialProof({ messages: [...DEFAULT_MESSAGES] })} className="text-[11px] text-gray-500 hover:text-gray-300 underline">
+                    Restablecer mensajes predeterminados
+                  </button>
+                )}
               </div>
-              {socialProof.avatars.length > 0 && (
-                <p className="text-[10px] text-gray-500 mt-2">
-                  {socialProof.avatars.length} avatar{socialProof.avatars.length !== 1 ? 'es' : ''} configurado{socialProof.avatars.length !== 1 ? 's' : ''}
-                </p>
-              )}
+
+              {/* Divider */}
+              <div className="border-t border-gray-700/50" />
+
+              {/* Avatars */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[11px] text-gray-400 font-medium">Avatares</label>
+                  <button type="button" onClick={addAvatar} className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                    <Plus size={10} /> Agregar avatar
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {socialProof.avatars.map((avatar) => {
+                    const bgColor = AVATAR_COLORS[hashStr(avatar.name) % AVATAR_COLORS.length];
+                    return (
+                      <div key={avatar.id} className="bg-gray-800 border border-gray-700 rounded-lg p-2 space-y-1.5">
+                        <div className="relative group">
+                          <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center">
+                            {avatar.imageUrl ? (
+                              <img
+                                src={avatar.imageUrl}
+                                alt={avatar.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <span className="text-2xl font-bold text-white" style={{ backgroundColor: bgColor, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {avatar.name?.charAt(0) || '?'}
+                              </span>
+                            )}
+                          </div>
+                          <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex flex-col items-center justify-center cursor-pointer">
+                            <Upload size={14} className="text-white mb-1" />
+                            <span className="text-[9px] text-white">Cambiar</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) uploadAvatarImage(avatar.id, file);
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => removeAvatar(avatar.id)}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={avatar.name}
+                          onChange={(e) => updateAvatar(avatar.id, { name: e.target.value })}
+                          className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                          placeholder="Nombre"
+                        />
+                        <input
+                          type="text"
+                          value={avatar.city}
+                          onChange={(e) => updateAvatar(avatar.id, { city: e.target.value })}
+                          className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+                          placeholder="Ciudad"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                {socialProof.avatars.length > 0 && (
+                  <p className="text-[10px] text-gray-500 mt-2">
+                    {socialProof.avatars.length} avatar{socialProof.avatars.length !== 1 ? 'es' : ''} configurado{socialProof.avatars.length !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         )}

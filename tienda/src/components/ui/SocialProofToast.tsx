@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 const TIME_OPTIONS = ['hace 2 min', 'hace 5 min', 'hace 8 min', 'hace 12 min', 'hace 18 min', 'hace 25 min'];
 const AVATAR_COLORS = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#6366f1'];
@@ -97,7 +97,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
   const [current, setCurrent] = useState<{ avatar: SocialProofAvatar; message: string; time: string } | null>(null);
   const msgIndexRef = useRef(0);
 
-  const avatars = migrateAvatars(config || {});
+  const avatars = useMemo(() => migrateAvatars(config || {}), [config?.avatars, config?.avatarFiles]);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -137,7 +137,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
     }, Math.max(interval, 5000));
 
     return () => { clearInterval(showTimer); clearTimeout(firstTimer); };
-  }, [mounted, config?.enabled, config?.interval, config?.messages, avatars, productName]);
+  }, [mounted, config?.enabled, config?.interval, config?.messages, config?.avatars, config?.avatarFiles, productName]);
 
   if (!mounted || !config?.enabled || !current) return null;
 
