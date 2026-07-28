@@ -222,6 +222,32 @@ const defaultPromotionBar: PromotionBarConfig = {
 const MIGRATION_NAMES = ['María', 'Carlos', 'Ana', 'Luis', 'Rosa', 'Jorge', 'Claudia', 'Pedro', 'Sofía', 'Miguel', 'Elena', 'Fernando', 'Patricia', 'Roberto', 'Diana', 'Andrés', 'Carmen'];
 const MIGRATION_CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo', 'Ica', 'Huancayo', 'Lima', 'Cusco', 'Arequipa', 'Trujillo', 'Lima', 'Piura', 'Chiclayo', 'Ica', 'Huancayo'];
 
+const IMGBB_MAP: Record<string, string> = {
+  'Abigail.jpg': 'https://i.ibb.co/p6f3nnyJ/1bcce3d3e809.jpg',
+  'Alejandro.jpg': 'https://i.ibb.co/G4g4qY37/075e42a1079e.jpg',
+  'Benjamin.jpg': 'https://i.ibb.co/0pYsJLY0/491bdc467f21.jpg',
+  'Daniela.jpg': 'https://i.ibb.co/4ngqxGqk/b3cba795ec88.jpg',
+  'Eric.jpg': 'https://i.ibb.co/35gfjYyN/581bb8e07080.jpg',
+  'jeremy.jpg': 'https://i.ibb.co/MkrVRHPp/a680ac24ecf5.jpg',
+  'juan.jpg': 'https://i.ibb.co/Z1H2pbC5/eabd331a6c08.jpg',
+  'Liliana.jpg': 'https://i.ibb.co/DDfVsfKB/3bfbe0a72485.jpg',
+  'lucas.jpg': 'https://i.ibb.co/Vc7xkG8J/292503f6281b.jpg',
+  'martina.jpg': 'https://i.ibb.co/NgP4CTsQ/fc4f09c61a0a.jpg',
+  'mateo.jpg': 'https://i.ibb.co/fYhLFh3z/ef852dafb6b5.jpg',
+  'melina.jpg': 'https://i.ibb.co/QFXwr5n0/58c6546cd8ba.jpg',
+  'santiago.jpg': 'https://i.ibb.co/j9CXN103/15696c5cdb75.jpg',
+  'sofia.jpg': 'https://i.ibb.co/MD1PGSxL/569b2641fba8.jpg',
+  'thiago.jpg': 'https://i.ibb.co/gL8mJKNV/5ef70ab02ebf.jpg',
+  'valentino.jpg': 'https://i.ibb.co/cnfgb57/2f670c2d4f69.jpg',
+  'zoey.jpg': 'https://i.ibb.co/WWzkn4rw/d29931d44c37.jpg',
+};
+
+function resolveAvatarUrl(url: string): string {
+  if (url.startsWith('http')) return url;
+  const filename = url.split('/').pop() || '';
+  return IMGBB_MAP[filename] || url;
+}
+
 const defaultSocialProof: SocialProofConfig = {
   enabled: false,
   interval: 5,
@@ -231,23 +257,23 @@ const defaultSocialProof: SocialProofConfig = {
     '{name} de {city} se lo llevó',
   ],
   avatars: [
-    { id: '1', imageUrl: '/avatars/Abigail.jpg', name: 'Abigail', city: 'Lima' },
-    { id: '2', imageUrl: '/avatars/Alejandro.jpg', name: 'Alejandro', city: 'Arequipa' },
-    { id: '3', imageUrl: '/avatars/Benjamin.jpg', name: 'Benjamin', city: 'Cusco' },
-    { id: '4', imageUrl: '/avatars/Daniela.jpg', name: 'Daniela', city: 'Trujillo' },
-    { id: '5', imageUrl: '/avatars/Eric.jpg', name: 'Eric', city: 'Lima' },
-    { id: '6', imageUrl: '/avatars/jeremy.jpg', name: 'Jeremy', city: 'Piura' },
-    { id: '7', imageUrl: '/avatars/juan.jpg', name: 'Juan', city: 'Chiclayo' },
-    { id: '8', imageUrl: '/avatars/Liliana.jpg', name: 'Liliana', city: 'Ica' },
-    { id: '9', imageUrl: '/avatars/lucas.jpg', name: 'Lucas', city: 'Huancayo' },
-    { id: '10', imageUrl: '/avatars/martina.jpg', name: 'Martina', city: 'Lima' },
-    { id: '11', imageUrl: '/avatars/mateo.jpg', name: 'Mateo', city: 'Cusco' },
-    { id: '12', imageUrl: '/avatars/melina.jpg', name: 'Melina', city: 'Arequipa' },
-    { id: '13', imageUrl: '/avatars/santiago.jpg', name: 'Santiago', city: 'Lima' },
-    { id: '14', imageUrl: '/avatars/sofia.jpg', name: 'Sofía', city: 'Trujillo' },
-    { id: '15', imageUrl: '/avatars/thiago.jpg', name: 'Thiago', city: 'Piura' },
-    { id: '16', imageUrl: '/avatars/valentino.jpg', name: 'Valentino', city: 'Chiclayo' },
-    { id: '17', imageUrl: '/avatars/zoey.jpg', name: 'Zoey', city: 'Lima' },
+    { id: '1', imageUrl: 'https://i.ibb.co/p6f3nnyJ/1bcce3d3e809.jpg', name: 'Abigail', city: 'Lima' },
+    { id: '2', imageUrl: 'https://i.ibb.co/G4g4qY37/075e42a1079e.jpg', name: 'Alejandro', city: 'Arequipa' },
+    { id: '3', imageUrl: 'https://i.ibb.co/0pYsJLY0/491bdc467f21.jpg', name: 'Benjamin', city: 'Cusco' },
+    { id: '4', imageUrl: 'https://i.ibb.co/4ngqxGqk/b3cba795ec88.jpg', name: 'Daniela', city: 'Trujillo' },
+    { id: '5', imageUrl: 'https://i.ibb.co/35gfjYyN/581bb8e07080.jpg', name: 'Eric', city: 'Lima' },
+    { id: '6', imageUrl: 'https://i.ibb.co/MkrVRHPp/a680ac24ecf5.jpg', name: 'Jeremy', city: 'Piura' },
+    { id: '7', imageUrl: 'https://i.ibb.co/Z1H2pbC5/eabd331a6c08.jpg', name: 'Juan', city: 'Chiclayo' },
+    { id: '8', imageUrl: 'https://i.ibb.co/DDfVsfKB/3bfbe0a72485.jpg', name: 'Liliana', city: 'Ica' },
+    { id: '9', imageUrl: 'https://i.ibb.co/Vc7xkG8J/292503f6281b.jpg', name: 'Lucas', city: 'Huancayo' },
+    { id: '10', imageUrl: 'https://i.ibb.co/NgP4CTsQ/fc4f09c61a0a.jpg', name: 'Martina', city: 'Lima' },
+    { id: '11', imageUrl: 'https://i.ibb.co/fYhLFh3z/ef852dafb6b5.jpg', name: 'Mateo', city: 'Cusco' },
+    { id: '12', imageUrl: 'https://i.ibb.co/QFXwr5n0/58c6546cd8ba.jpg', name: 'Melina', city: 'Arequipa' },
+    { id: '13', imageUrl: 'https://i.ibb.co/j9CXN103/15696c5cdb75.jpg', name: 'Santiago', city: 'Lima' },
+    { id: '14', imageUrl: 'https://i.ibb.co/MD1PGSxL/569b2641fba8.jpg', name: 'Sofía', city: 'Trujillo' },
+    { id: '15', imageUrl: 'https://i.ibb.co/gL8mJKNV/5ef70ab02ebf.jpg', name: 'Thiago', city: 'Piura' },
+    { id: '16', imageUrl: 'https://i.ibb.co/cnfgb57/2f670c2d4f69.jpg', name: 'Valentino', city: 'Chiclayo' },
+    { id: '17', imageUrl: 'https://i.ibb.co/WWzkn4rw/d29931d44c37.jpg', name: 'Zoey', city: 'Lima' },
   ],
 };
 
@@ -328,7 +354,7 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
     socialProof: (() => {
       const sp = initialData?.socialProof;
       if (!sp) return defaultSocialProof;
-      if (sp.avatars) return sp;
+      if (sp.avatars) return { ...sp, avatars: sp.avatars.map((a: any) => ({ ...a, imageUrl: resolveAvatarUrl(a.imageUrl) })) };
       const old = sp as any;
       if (old.avatarFiles && Array.isArray(old.avatarFiles) && old.avatarFiles.length > 0) {
         return {
@@ -337,7 +363,7 @@ export function ProductFormProvider({ initialData, productId, onAutoSave, childr
           messages: sp.messages,
           avatars: old.avatarFiles.map((f: string, i: number) => ({
             id: String(i + 1),
-            imageUrl: f.startsWith('/') ? f : `/avatars/${f}`,
+            imageUrl: IMGBB_MAP[f] || resolveAvatarUrl(`/avatars/${f}`),
             name: MIGRATION_NAMES[i % MIGRATION_NAMES.length],
             city: MIGRATION_CITIES[i % MIGRATION_CITIES.length],
           })),
