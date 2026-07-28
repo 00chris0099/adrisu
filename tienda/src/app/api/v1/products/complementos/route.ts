@@ -19,21 +19,13 @@ function score(candidate: any, original: any, context: string): number {
   else if (context === 'same_category') s += 25;
   else s += 10;
 
-  if (candidate.stock > 0) s += 10;
-  else s -= 30;
-
   if (oPrice > 0 && cPrice > 0) {
     const ratio = cPrice / oPrice;
     if (ratio >= 0.3 && ratio <= 1.5) s += 15;
     else if (ratio >= 0.1 && ratio <= 3) s += 5;
-    else s -= 10;
   }
 
   if (candidate.discountPercent > 0) s += 5;
-
-  const name = (candidate.name || '').toLowerCase();
-  const tags = (candidate.tags || []).join(' ').toLowerCase();
-  if (name.includes('beb') || name.includes('infantil') || tags.includes('bebe')) s += 3;
   if (candidate.images?.length > 0) s += 2;
 
   return s;
@@ -87,19 +79,30 @@ export async function GET(request: NextRequest) {
           if (!s.isActive) continue;
           if (s.linkedProductId && seen.has(s.linkedProductId)) continue;
 
-          const product = {
-            name: s.name,
-            price: Number(s.price) || 0,
-            discountPercent: 0,
-            stock: 100,
-            images: s.imageUrl ? [s.imageUrl] : [],
-            slug: s.linkedProductId || '',
-            tags: [],
-            compareAtPrice: s.compareAtPrice ? Number(s.compareAtPrice) : null,
-          };
-
-          if (s.linkedProductId) seen.add(s.linkedProductId);
-          candidates.push({ product, score: score(product, productInfo, 'suggested'), context: 'suggested' });
+          // If linked to a real product, verify it exists and has stock
+          if (s.linkedProductId) {
+            const prodRes = await fetch(`${WMS_URL}/api/v1/products/${s.linkedProductId}`);
+            if (!prodRes.ok) continue;
+            const prodData = await prodRes.json();
+            const real = prodData.data;
+            if (!real || real.status !== 'active' || (real.stock || 0) <= 0) continue;
+            seen.add(s.linkedProductId);
+            candidates.push({ product: real, score: score(real, productInfo, 'suggested'), context: 'suggested' });
+          } else {
+            // Custom suggested product — only include if has price
+            if (!s.price || Number(s.price) <= 0) continue;
+            const product = {
+              name: s.name,
+              price: Number(s.price) || 0,
+              discountPercent: 0,
+              stock: 0,
+              images: s.imageUrl ? [s.imageUrl] : [],
+              slug: '',
+              tags: [],
+              compareAtPrice: s.compareAtPrice ? Number(s.compareAtPrice) : null,
+            };
+            candidates.push({ product, score: score(product, productInfo, 'suggested'), context: 'suggested' });
+          }
         }
       }
     } catch {}
@@ -112,6 +115,7 @@ export async function GET(request: NextRequest) {
           const catData = await catRes.json();
           for (const p of (catData.data || [])) {
             if (p.status !== 'active' || seen.has(p.id)) continue;
+            if ((p.stock || 0) <= 0) continue;
             seen.add(p.id);
             candidates.push({ product: p, score: score(p, productInfo, 'same_category'), context: 'same_category' });
           }
@@ -127,6 +131,7 @@ export async function GET(request: NextRequest) {
           const allData = await allRes.json();
           for (const p of (allData.data || [])) {
             if (p.status !== 'active' || seen.has(p.id)) continue;
+            if ((p.stock || 0) <= 0) continue;
             seen.add(p.id);
             candidates.push({ product: p, score: score(p, productInfo, 'other'), context: 'other' });
           }
@@ -136,9 +141,11 @@ export async function GET(request: NextRequest) {
 
     // Sort by score descending, take top N
     candidates.sort((a, b) => b.score - a.score);
-    const top = candidates.slice(0, max);
 
-    const recomendaciones = top.map(({ product: p, context }) => {
+    const recomendaciones = candidates
+      .filter(({ product: p }) => (p.stock || 0) > 0)
+      .slice(0, max)
+      .map(({ product: p, context }) => {
       const price = parsePrice(p);
       const image = p.images?.[0] || null;
       const stock = p.stock || 0;
@@ -146,7 +153,7 @@ export async function GET(request: NextRequest) {
       return {
         Producto: p.name,
         Precio: `S/ ${price.toFixed(2)}`,
-        Stock: stock > 0 ? `${stock} uds` : 'Agotado',
+        Stock: `${stock} uds`,
         Link: `${STORE_URL}/producto/${p.slug}`,
         Foto: image || null,
         Tipo: context === 'suggested' ? 'Complemento recomendado' :
