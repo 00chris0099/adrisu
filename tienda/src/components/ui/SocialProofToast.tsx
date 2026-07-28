@@ -40,15 +40,18 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
   const [current, setCurrent] = useState<{ avatar: SocialProofAvatar; message: string; time: string } | null>(null);
   const msgIndexRef = useRef(0);
 
+  const avatars = config?.avatars || [];
+
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!mounted || !config.enabled || !productName || config.avatars.length === 0) return;
+    if (!mounted || !config?.enabled || !productName || avatars.length === 0) return;
 
     const buildNotification = () => {
-      const avatar = randomFrom(config.avatars);
-      const template = config.messages.length > 0
-        ? config.messages[msgIndexRef.current % config.messages.length]
+      const avatar = randomFrom(avatars);
+      const msgs = config?.messages || [];
+      const template = msgs.length > 0
+        ? msgs[msgIndexRef.current % msgs.length]
         : '{name} de {city} compró este producto';
       msgIndexRef.current++;
       const message = template
@@ -77,9 +80,9 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
     }, Math.max(interval, 5000));
 
     return () => { clearInterval(showTimer); clearTimeout(firstTimer); };
-  }, [mounted, config.enabled, config.interval, config.messages, config.avatars, productName]);
+  }, [mounted, config?.enabled, config?.interval, config?.messages, avatars, productName]);
 
-  if (!mounted || !config.enabled || !current || config.avatars.length === 0) return null;
+  if (!mounted || !config?.enabled || !current || avatars.length === 0) return null;
 
   const { avatar, message, time } = current;
   const initial = avatar.name ? avatar.name.charAt(0) : '?';
