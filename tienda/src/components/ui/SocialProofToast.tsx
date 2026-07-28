@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 
 const TIME_OPTIONS = ['hace 2 min', 'hace 5 min', 'hace 8 min', 'hace 12 min', 'hace 18 min', 'hace 25 min'];
 const AVATAR_COLORS = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#6366f1'];
+const MIGRATION_NAMES = ['María', 'Carlos', 'Ana', 'Luis', 'Rosa', 'Jorge', 'Claudia', 'Pedro', 'Sofía', 'Miguel', 'Elena', 'Fernando', 'Patricia', 'Roberto', 'Diana', 'Andrés', 'Carmen'];
+const MIGRATION_CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo', 'Ica', 'Huancayo', 'Lima', 'Cusco', 'Arequipa', 'Trujillo', 'Lima', 'Piura', 'Chiclayo', 'Ica', 'Huancayo'];
 
 function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -26,12 +28,26 @@ interface SocialProofConfig {
   enabled: boolean;
   interval: number;
   messages: string[];
-  avatars: SocialProofAvatar[];
+  avatars?: SocialProofAvatar[];
+  avatarFiles?: string[];
 }
 
 interface SocialProofToastProps {
   config: SocialProofConfig;
   productName: string;
+}
+
+function migrateAvatars(config: SocialProofConfig): SocialProofAvatar[] {
+  if (config.avatars && config.avatars.length > 0) return config.avatars;
+  if (config.avatarFiles && config.avatarFiles.length > 0) {
+    return config.avatarFiles.map((f: string, i: number) => ({
+      id: String(i + 1),
+      imageUrl: f.startsWith('/') ? f : `/avatars/${f}`,
+      name: MIGRATION_NAMES[i % MIGRATION_NAMES.length],
+      city: MIGRATION_CITIES[i % MIGRATION_CITIES.length],
+    }));
+  }
+  return [];
 }
 
 export default function SocialProofToast({ config, productName }: SocialProofToastProps) {
@@ -40,7 +56,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
   const [current, setCurrent] = useState<{ avatar: SocialProofAvatar; message: string; time: string } | null>(null);
   const msgIndexRef = useRef(0);
 
-  const avatars = config?.avatars || [];
+  const avatars = migrateAvatars(config || {});
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -64,7 +80,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
 
     setCurrent(buildNotification());
 
-    const interval = Math.max(config.interval || 5, 3) * 1000;
+    const interval = Math.max(config?.interval || 5, 3) * 1000;
     const hideDuration = 4000;
     const extraPause = 1000;
 
