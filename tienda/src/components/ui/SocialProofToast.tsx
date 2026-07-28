@@ -27,6 +27,18 @@ const IMGBB_MAP: Record<string, string> = {
   'zoey.jpg': 'https://i.ibb.co/WWzkn4rw/d29931d44c37.jpg',
 };
 
+const DEFAULT_AVATARS: SocialProofAvatar[] = [
+  { id: '1', imageUrl: 'https://i.ibb.co/p6f3nnyJ/1bcce3d3e809.jpg', name: 'Abigail', city: 'Lima' },
+  { id: '2', imageUrl: 'https://i.ibb.co/G4g4qY37/075e42a1079e.jpg', name: 'Alejandro', city: 'Arequipa' },
+  { id: '3', imageUrl: 'https://i.ibb.co/0pYsJLY0/491bdc467f21.jpg', name: 'Benjamin', city: 'Cusco' },
+  { id: '4', imageUrl: 'https://i.ibb.co/4ngqxGqk/b3cba795ec88.jpg', name: 'Daniela', city: 'Trujillo' },
+  { id: '5', imageUrl: 'https://i.ibb.co/35gfjYyN/581bb8e07080.jpg', name: 'Eric', city: 'Lima' },
+  { id: '6', imageUrl: 'https://i.ibb.co/MkrVRHPp/a680ac24ecf5.jpg', name: 'Jeremy', city: 'Piura' },
+  { id: '7', imageUrl: 'https://i.ibb.co/Z1H2pbC5/eabd331a6c08.jpg', name: 'Juan', city: 'Chiclayo' },
+  { id: '8', imageUrl: 'https://i.ibb.co/DDfVsfKB/3bfbe0a72485.jpg', name: 'Liliana', city: 'Ica' },
+  { id: '9', imageUrl: 'https://i.ibb.co/Vc7xkG8J/292503f6281b.jpg', name: 'Lucas', city: 'Huancayo' },
+];
+
 function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -76,7 +88,7 @@ function migrateAvatars(config: SocialProofConfig): SocialProofAvatar[] {
       city: MIGRATION_CITIES[i % MIGRATION_CITIES.length],
     }));
   }
-  return [];
+  return DEFAULT_AVATARS;
 }
 
 export default function SocialProofToast({ config, productName }: SocialProofToastProps) {
@@ -90,7 +102,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!mounted || !config?.enabled || !productName || avatars.length === 0) return;
+    if (!mounted || !config?.enabled || !productName) return;
 
     const buildNotification = () => {
       const avatar = randomFrom(avatars);
@@ -127,7 +139,7 @@ export default function SocialProofToast({ config, productName }: SocialProofToa
     return () => { clearInterval(showTimer); clearTimeout(firstTimer); };
   }, [mounted, config?.enabled, config?.interval, config?.messages, avatars, productName]);
 
-  if (!mounted || !config?.enabled || !current || avatars.length === 0) return null;
+  if (!mounted || !config?.enabled || !current) return null;
 
   const { avatar, message, time } = current;
   const initial = avatar.name ? avatar.name.charAt(0) : '?';
