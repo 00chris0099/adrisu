@@ -96,7 +96,7 @@ export default function PickingPage() {
       await fetch(`/api/v1/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'packing' }),
+        body: JSON.stringify({ status: 'alistado' }),
       });
       router.push(`/pedidos?id=${orderId}`);
     } catch (err) {

@@ -82,9 +82,9 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
     await invalidateCache('orders:*');
 
-    // Auto-create shipment when status is "ready_to_ship"
+    // Auto-create shipment when status is "alistado"
     let shipmentResult = null;
-    if (status === 'ready_to_ship') {
+    if (status === 'alistado') {
       const orderWithItems = await prisma.order.findUnique({
         where: { id: order.id },
         include: { items: true, customer: true },
@@ -104,9 +104,9 @@ export async function PATCH(request: NextRequest, { params }: Props) {
         const { sendEmail, orderStatusUpdateEmail } = await import('@/lib/notifications/email');
         const statusLabels: Record<string, string> = {
           pending: 'Pendiente', confirmed: 'Confirmado', processing: 'Procesando',
-          picking: 'En picking', packing: 'Empaquetando', ready_to_ship: 'Listo para enviar',
+          alistado: 'Alistado',
           shipped: 'Enviado', in_transit: 'En transito', delivered: 'Entregado',
-          cancelled: 'Cancelado', returned: 'Devuelto', refunded: 'Reembolsado',
+          cancelled: 'Cancelado', returned: 'Devuelto',
         };
         sendEmail({
           to: updated.customer.email,
@@ -125,8 +125,9 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     try {
       const statusLabels2: Record<string, string> = {
         pending: 'Pendiente', confirmed: 'Confirmado', processing: 'Procesando',
-        picking: 'Preparando', packing: 'Empaquetando', ready_to_ship: 'Listo para enviar',
-        shipped: 'Enviado', in_transit: 'En transito', delivered: 'Entregado', cancelled: 'Cancelado',
+        alistado: 'Alistado',
+        shipped: 'Enviado', in_transit: 'En transito', delivered: 'Entregado',
+        cancelled: 'Cancelado', returned: 'Devuelto',
       };
       await prisma.notificationQueue.create({
         data: {

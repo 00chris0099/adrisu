@@ -8,13 +8,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = getSearchParam(searchParams, 'q');
     const customerType = getSearchParam(searchParams, 'type');
+    const tier = getSearchParam(searchParams, 'tier');
     const { page, limit, offset } = parsePagination(searchParams);
 
-    const result = await cached(`customers:${page}:${limit}:${search}:${customerType}`, () =>
+    const result = await cached(`customers:${page}:${limit}:${search}:${customerType}:${tier}`, () =>
       withDbFallback(
         async () => {
           const where: any = {};
           if (customerType) where.customerType = customerType;
+          if (tier) where.customerTier = tier;
           if (search) {
             where.OR = [
               { fullName: { contains: search, mode: 'insensitive' } },
@@ -54,6 +56,7 @@ export async function GET(request: NextRequest) {
       creditLimit: Number(c.creditLimit),
       currentBalance: Number(c.currentBalance),
       tags: c.tags,
+      customerTier: c.customerTier || 'normal',
       isActive: c.isActive,
       ordersCount: c._count.orders,
       invoicesCount: c._count.invoices,
@@ -69,7 +72,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, phone, customerType, companyName, taxId, creditLimit } = body;
+    const { fullName, email, phone, customerType, companyName, taxId, creditLimit, notes, tags, billingAddress, shippingAddress } = body;
 
     if (!fullName) return apiError('Full name is required', 400);
 
@@ -77,9 +80,16 @@ export async function POST(request: NextRequest) {
       data: {
         source: 'wms',
         fullName,
-        email: email || `guest-${Date.now()}@temp.com`,
+        email: email || null,
         phone: phone || null,
-        password: 'guest',
+        customerType: customerType || 'individual',
+        companyName: companyName || null,
+        taxId: taxId || null,
+        creditLimit: creditLimit || 0,
+        notes: notes || null,
+        tags: tags || [],
+        billingAddress: billingAddress || {},
+        shippingAddress: shippingAddress || {},
       },
     });
 

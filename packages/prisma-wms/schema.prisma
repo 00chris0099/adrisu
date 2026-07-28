@@ -28,9 +28,11 @@ enum OrderStatus {
   pending
   confirmed
   processing
+  alistado
   shipped
   in_transit
   delivered
+  returned
   cancelled
 }
 
@@ -383,6 +385,7 @@ model Customer {
   currentBalance  Decimal  @default(0) @db.Decimal(12, 2) @map("current_balance")
   tags            String[] @default([])
   notes           String?
+  customerTier    String   @default("normal") @map("customer_tier") // nuevo, frecuente, vip, problematico
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")

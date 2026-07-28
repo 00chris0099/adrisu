@@ -19,7 +19,7 @@ export async function GET(_request: NextRequest, { params }: Props) {
 export async function PUT(request: NextRequest, { params }: Props) {
   try {
     const body = await request.json();
-    const { fullName, phone, email, isActive } = body;
+    const { fullName, phone, email, customerType, companyName, taxId, creditLimit, notes, tags, billingAddress, shippingAddress, isActive, customerTier } = body;
     const existing = await prisma.customer.findUnique({ where: { id: params.id } });
     if (!existing) return apiError('Customer not found', 404);
 
@@ -29,7 +29,16 @@ export async function PUT(request: NextRequest, { params }: Props) {
         ...(fullName !== undefined && { fullName }),
         ...(phone !== undefined && { phone }),
         ...(email !== undefined && { email }),
+        ...(customerType !== undefined && { customerType }),
+        ...(companyName !== undefined && { companyName }),
+        ...(taxId !== undefined && { taxId }),
+        ...(creditLimit !== undefined && { creditLimit }),
+        ...(notes !== undefined && { notes }),
+        ...(tags !== undefined && { tags }),
+        ...(billingAddress !== undefined && { billingAddress }),
+        ...(shippingAddress !== undefined && { shippingAddress }),
         ...(isActive !== undefined && { isActive }),
+        ...(customerTier !== undefined && { customerTier }),
       },
     });
     await invalidateCache('customers:*');

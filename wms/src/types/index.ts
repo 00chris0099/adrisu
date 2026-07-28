@@ -5,7 +5,7 @@
 
 export type UserRole = 'super_admin' | 'admin' | 'warehouse_manager' | 'warehouse_staff' | 'sales_manager' | 'sales_rep' | 'logistics_coordinator' | 'customer_service' | 'finance' | 'readonly';
 
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'in_transit' | 'delivered' | 'cancelled';
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'alistado' | 'shipped' | 'in_transit' | 'delivered' | 'returned' | 'cancelled';
 
 export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'partially_paid' | 'paid' | 'failed' | 'refunded' | 'voided';
 
@@ -128,6 +128,7 @@ export interface Customer {
   currentBalance: number;
   tags: string[];
   notes?: string | null;
+  customerTier: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

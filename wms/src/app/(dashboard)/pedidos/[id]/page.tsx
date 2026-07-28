@@ -6,11 +6,12 @@ import { ArrowLeft, Truck, Loader2, CheckCircle, Clock, Package, AlertTriangle }
 import StatusBadge from '@/components/ui/StatusBadge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
-const STATUS_FLOW = ['pending', 'confirmed', 'processing', 'picking', 'packing', 'ready_to_ship', 'shipped', 'in_transit', 'delivered'];
+const STATUS_FLOW = ['pending', 'confirmed', 'processing', 'alistado', 'shipped', 'in_transit', 'delivered'];
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente', confirmed: 'Confirmado', processing: 'Procesando',
-  picking: 'Picking', packing: 'Empaquetando', ready_to_ship: 'Listo para enviar',
-  shipped: 'Enviado', in_transit: 'En transito', delivered: 'Entregado', cancelled: 'Cancelado',
+  alistado: 'Alistado',
+  shipped: 'Enviado', in_transit: 'En transito', delivered: 'Entregado',
+  returned: 'Devuelto', cancelled: 'Cancelado',
 };
 
 export default function PedidoDetailPage() {

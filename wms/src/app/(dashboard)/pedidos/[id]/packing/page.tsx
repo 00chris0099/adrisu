@@ -88,7 +88,7 @@ export default function PackingPage() {
       await fetch(`/api/v1/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'ready_to_ship' }),
+        body: JSON.stringify({ status: 'alistado' }),
       });
       router.push(`/pedidos?id=${orderId}`);
     } catch (err) {

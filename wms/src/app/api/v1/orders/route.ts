@@ -149,7 +149,6 @@ async function createGuestCustomer() {
       source: 'wms',
       fullName: 'Cliente WMS',
       email: `guest-${Date.now()}@temp.com`,
-      password: 'guest',
     },
   });
 }
